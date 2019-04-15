@@ -64,11 +64,7 @@
 
 ```json
 {
-  // 返回的原始数据为res
   "merge": {
-    // titles分组
-    // 整合res中id为'665,666'且content不为'img'的标题
-    // 且顺带看看有没有res中id为'667,668'且content为'skuid'或者'img'的标题，有就带着一起上车
     "titles": [{
       "id": "665,666",
       "$^content": "img"
@@ -76,17 +72,11 @@
       "id": "667,668",
       "content": ["skuid", "img"]
     }],
-    // skucards分组
-    // 整合res.des中type为5的子项目上车
     "skucards": {
       "des":{
         "type": "5"
       }
     },
-    // scrollers
-    // 整合res.des中img为xx.gov的所有子项目
-    // 或者整合res.des.leftStocks的数目大于100的
-    // 以第一个满足条件的为最终上车对象
     "scrollers": {
       "des":{
         "img": "xx.gov" 
@@ -100,6 +90,17 @@
   }
 }
 ```
+注意：返回的原始数据设为`res`  
+*titles分组*  
+包含`res`中id为`'665,666'`且content不为`'img'`的标题  
+且顺带看看有没有res中id为`'667,668'`且content为`'skuid'`或者`'img'`的标题，有就带着一起上车  
+*skucards分组*  
+包含`res.des`中type为5的子项目上车  
+*scrollers分组*  
+包含`res.des`中`img`为`xx.gov`的所有子项目  
+或包含 `res.des.leftStocks`的数目大于100的  
+以第一个满足条件的为最终上车对象  
+
 
 ### filter [object]
 过滤筛选模块，可包含正向、反向过滤数据，可在`filterWithoutMerge`中配置是否要在原始数据中排除已经整合出来的数据。
@@ -121,10 +122,6 @@
 ```json
 {
   "filter": {
-    // mayLikeProducts为数组
-    // 满足以下条件,选择保留子项，剔除满足条件的子项为"$^mayLikeProducts"
-    // 保留groupId小于8414500且shopId在024100和024112之间的子项目
-    // 或者保留groupName为'今日推荐'且shopName'戴尔商用商红专卖店'的子项目
     "mayLikeProducts":{  
       "$<groupId": "8414500",
       "$<<shopId": ["024100","024112"],
@@ -134,16 +131,13 @@
       }
     },
     "recommendProducts":{  
-      //recommendProducts为对象,满足以下条件,选择剔除或者保留自身
-      //保留库存大于等于1000的recommendProducts自身
+
       "$>=leftStocks": "1000" 
     },
     "$|":{
-      // 或者
-      // 保留headInfo，只要子项hotProducts不为0
-      // 保留mayLikeProducts，只要子项timeBegin大于1550163689000
+
       "headInfo": {
-        "$^hotProducts": "0"  //数值等于0或者数组长度为0
+        "$^hotProducts": "0" 
       },
       "mayLikeProducts": {
         "$>timeBegin": "1550163689000"  
@@ -152,9 +146,19 @@
   }
 }
 ```
+*mayLikeProducts*为数组满足以下条件,选择保留子项，剔除满足条件的子项为"$^mayLikeProducts"  
+保留`groupId`小于`8414500`且`shopId`在`024100`和`024112`之间的子项目  
+或者保留`groupName`为'今日推荐'且`shopName`为'戴尔商用商红专卖店'的子项目     
+
+*recommendProducts*为对象,满足以下条件,选择剔除或者保留自身    
+保留库存大于等于1000的`recommendProducts`自身，或者保留`headInfo`，只要子项`hotProducts`不为0  
+保留`mayLikeProducts`，只要子项`timeBegin`大于`1550163689000`
+
+
 以下这种情况，就是过滤掉自身。
 
 ```json
 {
  "$^recommendProducts": true
 }
+```
