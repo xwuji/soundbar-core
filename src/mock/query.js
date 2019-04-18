@@ -8,19 +8,14 @@ module.exports = {
   },
   'filterWithoutMerge': true,
   'mergeRule': {
-    'titles': [{
-      'id': '665,666',
-      '$^content': 'img'
-    }, {
-      'id': '667,668',
-      '$|content': ['skuid', 'img']
-    }],
-    'skucards': {
-      'type': '5'
+    'auhtors': {
+      '$.result.list': {
+        'floorAppearance': 'authorDetailFloor_2'
+      }
     }
   },
   'filterRule': {
-    '$^mayLikeProducts': {
+    'mayLikeProducts': {
       '$<groupId': '8414500',
       '$<<shopId': ['024100', '024112'],
       '$|': {
@@ -28,7 +23,7 @@ module.exports = {
         'shopName': '戴尔商用商红专卖店'
       }
     },
-    '$^recommendProducts': {
+    'recommendProducts': {
       '$>=leftStocks': '1000'
     },
     '$|': {
