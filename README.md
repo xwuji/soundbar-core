@@ -106,7 +106,7 @@
 1.`parent`是`对象`则继续查找`parent`下的`child`    
 2.`parent`是`数组`则继续查找`parent`里有`child`的子项  
 3.如果整个链式查找出错或者找不到期望的筛选深度，则废弃该合并字段，找不到`parent`或者`child`,mergeGroupA就会被废弃，返回数据中不会存在此字段  
-4.`root > prarent > child` 中满足B等于`conditionB``的`child`会被合并到`mergeGroupA`中
+4.`root > prarent > child` 中满足B等于`conditionB`的`child`会被合并到`mergeGroupA`中
 
 
   
