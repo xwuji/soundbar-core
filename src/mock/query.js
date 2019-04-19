@@ -9,30 +9,26 @@ module.exports = {
   'filterWithoutMerge': true,
   'mergeRule': {
     'auhtors': {
-      '$.result.list': {
-        'floorAppearance': 'authorDetailFloor_2'
+      '$.result.list.description': {
+        'type': '11',
+        '$>age': '20',
+        '$!=skuid': '10023',
+        '$$detail': '/^jdsku/g',
+        '$|': {
+          'type': '12',
+          '$>age': '10'
+        }
       }
     }
   },
   'filterRule': {
-    'mayLikeProducts': {
-      '$<groupId': '8414500',
-      '$<<shopId': ['024100', '024112'],
-      '$|': {
-        'groupName': '今日推荐',
-        'shopName': '戴尔商用商红专卖店'
-      }
+    // 针对统一详情页接口
+    '$.result.list': {
+      // 'floorApearrence': 'floorAuthor',
+      '$!=floorApearrence': 'floorLable'
     },
-    'recommendProducts': {
-      '$>=leftStocks': '1000'
-    },
-    '$|': {
-      'headInfo': {
-        '$^hotProducts': '0'
-      },
-      'mayLikeProducts': {
-        '$>timeBegin': '1550163689000'
-      }
+    '$.result.config': {
+      '$^': ['footer']
     }
   }
 }
