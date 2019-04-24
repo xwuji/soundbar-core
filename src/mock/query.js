@@ -8,24 +8,24 @@ module.exports = {
   },
   'filterWithoutMerge': true,
   'mergeRule': {
-    'auhtors': {
+    // 满足条件的保留然后合并
+    'skusOrImgs': {
       '$.result.list.description': {
-        'type': '11',
-        '$>age': '20',
-        '$!=skuid': '10023',
-        '$$detail': '/^jdsku/g',
+        'type': '3',
         '$|': {
-          'type': '12',
-          '$>age': '10'
+          'type': '2'
         }
+      }
+    },
+    'authorDetailFloors': {
+      '$.result.list': {
+        '$$floorAppearance': '/authorDetailFloor/g'
       }
     }
   },
   'filterRule': {
-    // 针对统一详情页接口
     '$.result.list': {
-      // 'floorApearrence': 'floorAuthor',
-      '$!=floorApearrence': 'floorLable'
+      '$!=floorApearrence': 'similarArticleFloor_2'
     },
     '$.result.config': {
       '$^': ['footer']
