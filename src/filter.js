@@ -1,6 +1,12 @@
-if (filterRule) {
-  let filterResData = {}
-  let sourceData = { ...SOURCEDATA }
+const SOURCEDATA = require('./mock/source.js')
+const QUERYDATA = require('./mock/query.js')
+const TYPES = require('./types.js')
+const { sourceMatchConditions } = require('./functions.js')
+const { isArray, isObject } = TYPES
+
+module.exports = function filterGroupData () {
+  const { filterRule } = QUERYDATA
+  let filterResData = { ...SOURCEDATA }
   let filterPathes = Object.keys(filterRule)
   // 排序，层级高的先处理
   filterPathes.sort((m, n) => {
@@ -9,30 +15,42 @@ if (filterRule) {
   // filterPathes => ["$.code","$.result.list","$.result.config","$.result.pageView","$.result.list.description"]
   const filterPathesLen = filterPathes.length
   for (let i = 0; i < filterPathesLen; i++) {
-    let operatorData = sourceData
+    let operatorData = filterResData
     const filterPath = filterPathes[i] // "$.result.list"
-    const conditions = filterRule[filterPath] // true or {}
+    const conditions = filterRule[filterPath] // {}
     const rulePathes = filterPath.split('.').splice(1)//  ['result','list']
     const rulePathLen = rulePathes.length
-    if (isBoolean(conditions)) {
-      // false情况下删除原数据该字段
-      if (!conditions) {
-        for (let i = 0; i < rulePathLen; i++) {
-          if (i === rulePathLen - 1) {
-            delete operatorData[rulePathes[i]]
-          } else {
-            operatorData = operatorData[rulePathes[i]]
-          }
+    for (let i = 0; i < rulePathLen; i++) {
+      operatorData = operatorData[rulePathes[i]] // filterResData['result']['list']
+      if (isArray(operatorData) && (i === rulePathLen - 1)) {
+        // 寻址操作
+        const filterArray = arrayFilterEvent(operatorData, conditions)
+        if (filterArray) {
+          operatorData.length = 0
+          filterArray.map((matched) => {
+            operatorData.push(matched)
+          })
         }
-      }
-    } else {
-      let orBranchConditions
-      // 如果条件中含有或(||)分支条件
-      if (conditions['$|']) {
-      // 删除原条件组中的或逻辑，储存在变量中
-        orBranchConditions = conditions['$|']
-        delete conditions['$|']
+      } else {
+        objectFilterEvent(operatorData, conditions)
       }
     }
   }
+  return filterResData
+}
+function objectFilterEvent (sourceObject, conditions) {
+  const filterKeysArray = conditions['$^']
+  if (!isObject(sourceObject) || !filterKeysArray) return false
+  filterKeysArray.map((filterKey) => {
+    if (sourceObject.hasOwnProperty(filterKey)) {
+      delete sourceObject[filterKey]
+    }
+  })
+}
+function arrayFilterEvent (sourceArray, conditions) {
+  if (!isArray(sourceArray)) return false
+  return sourceArray.filter((sourcePosData) => {
+    const { matched } = sourceMatchConditions(sourcePosData, conditions)
+    return !matched
+  })
 }

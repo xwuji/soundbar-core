@@ -1,19 +1,21 @@
 const SOURCEDATA = require('./mock/source.js')
 const QUERYDATA = require('./mock/query.js')
 const TYPES = require('./types.js')
+const { regMatch } = require('./config')
+const { fetchOutKeyChild, sourceMatchConditions } = require('./functions.js')
 const { isArray, isObject } = TYPES
 
-let mergeGroup = {}
+let mergeGroupsList = {}
 
-function mergeGroupData () {
+module.exports = function mergeGroupData () {
   const { mergeRule } = QUERYDATA
-  const mergeGroups = Object.keys(mergeRule) // merge自定义分组集合 ['skusOrImgs','authorDetailFloors']
-  const mergeGroupsLen = mergeGroups.length
-  for (let i = 0; i < mergeGroupsLen; i++) {
+  const mergeGroupsListKeys = Object.keys(mergeRule) // merge自定义分组集合 ['skusOrImgs','authorDetailFloors']
+  const mergeGroupsListLen = mergeGroupsListKeys.length
+  for (let i = 0; i < mergeGroupsListLen; i++) {
     let orBranchConditions
-    const mergeGroupName = mergeGroups[i]
+    const mergeGroupName = mergeGroupsListKeys[i]
     const mergeGroup = mergeRule[mergeGroupName] // merge单个分组 'skusOrImgs'
-    mergeGroup[mergeGroupName] = []
+    mergeGroupsList[mergeGroupName] = []
     const mergeRulePathes = Object.keys(mergeGroup)
     const firstRulePath = mergeRulePathes[0] // 前期只考虑同纬度的筛选合并，多维度的合并筛选合并后期支持
     const sourceRulePathData = sourceDataMapRulePath(firstRulePath)
@@ -25,16 +27,20 @@ function mergeGroupData () {
       delete conditions['$|']
     }
     mergeHandler(sourceRulePathData, mergeGroupName, conditions)
-    if (mergeGroup[mergeGroupName].length === 0) { // 原条件不匹配采用备用条件
+    if (mergeGroupsList[mergeGroupName].length === 0) { // 原条件不匹配采用备用条件
       mergeHandler(sourceRulePathData, mergeGroupName, orBranchConditions)
     }
   }
-
-  return mergeGroup
+  return mergeGroupsList
 }
 function addNewMergeData (params) {
-  const res = matchedData(params.sourceMatched, params.conditions)
-  res && mergeGroup[params.mergeGroupName].push(res)
+  // 路径映射的集合和对应的条件进行匹配 匹配成功返回匹配的集合
+  const { matched, sourceData } = sourceMatchConditions(params.sourceMatched, params.conditions)
+  if (matched) {
+    mergeGroupsList[params.mergeGroupName].push(sourceData)
+  } else {
+    return false
+  }
 }
 function mergeHandler (sourceRulePathData, mergeGroupName, conditions) {
   if (isArray(sourceRulePathData)) {
@@ -82,6 +88,7 @@ function mergeHandler (sourceRulePathData, mergeGroupName, conditions) {
  * @returns 匹配到的所有集合
  */
 function sourceDataMapRulePath (rulePath) {
+  const { REG_RULEPATH } = regMatch
   let resData = { ...SOURCEDATA }
   if (rulePath.match(REG_RULEPATH)) {
     // 处理 '$.a.b.c'路径 a、b、c只能是对象或者数组形式
@@ -107,67 +114,4 @@ function sourceDataMapRulePath (rulePath) {
   }
   // resData有mutilRes属性，表示当前筛选出来的结果是多结果的，不是当前数组本身而是数组里的子项
   return resData // [] or {}
-}
-
-// 路径映射的集合和对应的条件进行匹配 匹配成功返回匹配的集合
-function matchedData (sourceData, conditions) {
-  const ckeys = Object.keys(conditions)
-  const ckeysLen = ckeys.length
-  const deleteKeys = []
-  let entryThis = true
-  if (ckeysLen === 0) return false
-  for (let i = 0; i < ckeysLen; i++) {
-    let ckey = ckeys[i] // 匹配的key
-    let condit = conditions[ckey] // 匹配的conidtion
-    if (ckey.match(REG_NOT)) {
-      const deleteKey = ckey.replace(REG_NOT, '')
-      deleteKeys.push = deleteKey
-    } else if (ckey.match(REG_LT)) {
-      const key = ckey.replace(REG_LT, '')
-      const compareRes = compareResult(sourceData, key, condit, 'lt')
-      entryThis = entryThis && compareRes
-    } else if (ckey.match(REG_LTE)) {
-      const key = ckey.replace(REG_LTE, '')
-      const compareRes = compareResult(sourceData, key, condit, 'lte')
-      entryThis = entryThis && compareRes
-    } else if (ckey.match(REG_GT)) {
-      const key = ckey.replace(REG_GT, '')
-      const compareRes = compareResult(sourceData, key, condit, 'gt')
-      entryThis = entryThis && compareRes
-    } else if (ckey.match(REG_GTE)) {
-      const key = ckey.replace(REG_GTE, '')
-      const compareRes = compareResult(sourceData, key, condit, 'gte')
-      entryThis = entryThis && compareRes
-    } else if (ckey.match(REG_NOTEQUAL)) {
-      const key = ckey.replace(REG_NOTEQUAL, '')
-      const compareRes = compareResult(sourceData, key, condit, 'notEqual')
-      entryThis = entryThis && compareRes
-    } else if (ckey.match(REG_BETWEEN)) {
-      const key = ckey.replace(REG_BETWEEN, '')
-      const compareRes = compareResult(sourceData, key, condit, 'bt')
-      entryThis = entryThis && compareRes
-    } else if (ckey.match(REG_EXP)) {
-      const key = ckey.replace(REG_EXP, '')
-      const compareRes = compareResult(sourceData, key, condit, 'reg')
-      entryThis = entryThis && compareRes
-    } else if (!ckey.match(REG_OR)) {
-      // and逻辑直接忽略符号，执行默认逻辑
-      let key
-      if (ckey.match(REG_AND)) {
-        key = ckey.replace(REG_AND, '')
-      } else {
-        key = ckey
-      }
-      entryThis = entryThis && compareResult(sourceData, key, condit)
-    }
-  }
-  // 有一条不符合则返回false
-  if (entryThis) {
-    deleteKeys.map((dk) => {
-      delete sourceData[dk]
-    })
-    return sourceData // 条件都满足 返回原数据 但是要删除排除掉的数据
-  } else {
-    return false
-  }
 }
