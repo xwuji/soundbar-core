@@ -1,9 +1,9 @@
 
-## 查询附加符号
+## 查询附加符号定义
 | 符号 | 定义  |
 | ------ | ------ |
 | $& | 与，默认，独立逻辑符号，不与任何字符连接使用 |
-| $&#124; | 或，条件满足其一即可，独立逻辑符号，不与任何字符连接使用 |
+| $&#124; | 或，条件满足其一即可，merge专用，独立逻辑符号，不与任何字符连接使用 |
 | $^ | 非，剔除此条件下的当前数据，独立逻辑符号，不与任何字符连接使用 |
 | $. | 定位深度，类似于this. 只适用于mergeRule中|
 | $< | 小于，适用于数值或者数组的长度  |
@@ -17,7 +17,7 @@
 
 
 
-**$&**  查询组里条目之间的关系默认是与的关系，当B且C满足条件，A才被过滤出来。
+**$&**  查询组里条目之间的关系默认是与的关系，当B且C满足条件，A才满足条件。
 
 ```json
 {
@@ -29,7 +29,7 @@
 ```
 等价于`B & C`
 
-**$|**  查询组里条目之间的是或的关系，当B或C且D满足条件，A才被提取出来。  
+**$|**  查询组里条目之间的是或的关系，当B或C且D满足条件，A才被提取出来，注意只有在merge规则里使用或逻辑，filter规则里不必使用或关系。
 
 ```json
 {
@@ -44,7 +44,7 @@
 ```
 等价于 `B | ( C & D )` 
 
-**$^**  满足B的情况下排除A字段中的C和D字段，再提取出A，`$^`的value为数组，数组中的值为需要排除的字段。  
+**$^**  满足B的情况下过滤掉A字段中的C和D字段，再提取出A，`$^`的value为数组，数组中的值为需要排除的字段。   
 ```json
 {
   "A": {
@@ -53,7 +53,7 @@
   }
 }
 ```
-提取出A字段的数据，但是要排除排除其中的C和D字段
+过滤A字段中的C和D字段
 ```json
 {
   "A": {
@@ -70,7 +70,7 @@
   }
 }
 ```
-假设B为数值，C为数组，那么A字段中的B大于等于100且C的长度在1到100区间，就提取A字段数据。
+假设B为数值，C为数组，那么A字段中的B大于等于100且C的长度在1到100区间，就提取A字段数据。  
 
 **$!=**   不等于符号
 ```json
@@ -81,14 +81,15 @@
   }
 }
 ```
-如果B等于`conditionB`，且C不等于`conditionC`，那么提取A段数据
+如果B等于`conditionB`，且C不等于`conditionC`，那么提取A段数据。  
 
-**$$**   正则匹配符号，后面的筛选条件为正则表达式，原数据中的数据会和正则表达式进行match匹配  
+**$$**   正则匹配符号，后面的筛选条件为正则表达式数组，数组第一项为正则表达式，第二项为标志；原数据中的数据会和正则表达式进行match匹配。  
+语法：  ```'$$key': [pattern[,flag]]```
 ```json
 {
   "A": {
     "B": "conditionB",
-    "$$C": "/condition(?:C|D)/"
+    "$$C": ["/condition(?:C|D)/","g"]
   }
 }
 ```
@@ -115,7 +116,7 @@
 
 **注意：**  
 1. 逻辑符号`或` `非` `且`表达逻辑关系时候，符号`$|` `$^` `$&`都需要<mark>作为单独的Key值写,</mark>，以便于分组，不可和字段连在一起写。
-2. 逻辑查询，为了兼顾性能，只适用于简单类型的条件比较，字符串，数值，布尔，undefined,null等，不适用于复杂类型的判断。例如以上的`conditionB`，`conditionC`条件可以为字符串，数值，布尔值，空等，不可以为对象，函数，数组。
+2. 逻辑查询，为了兼顾性能，只适用于简单类型的条件比较，字符串，数值，布尔，undefined,null等，不适用于复杂类型的判断。例如以上的`condition`条件可以为字符串，数值，布尔值，空等，不可以为对象，函数，数组。
 
 
 ## 查询参数
@@ -165,29 +166,21 @@
 ```json
 {
   "mergeRule": {
-    "titles": [{
-      "id": "665,666",
-      "$!=content": "img"
-    }, {
-      "id": "667,668",
-      "$|": {
-        "content": "nike"
-      },
-      "$|": {
-        "content": "puma"
+    "titles": {
+      "$.result.list":{
+        "id": ["665,666","667,668"],
+        "$!=content": "img"
       }
-    }],
+    },
     "skucards": {
-      "des":{
+      "$.result.des":{
         "type": "5"
       }
     },
     "scrollers": {
-      "skus":{
-        "img": "xx.gov" 
-      },
-      "$|":{
-        "des":{
+      "$.result.skus":{
+        "img": "xx.gov",
+        "$|":{
           "$>=leftStock": "100"
         }
       }
@@ -195,78 +188,104 @@
   }
 }
 ```
-注意：返回的原始数据设为`res`  
+假设返回的原始数据设为`res`  
 *titles分组*  
-包含`res`中id为`'665,666'`且content不为`'img'`的标题  
-且顺带看看有没有res中id为`'667,668'`且content为`'skuid'`或者`'img'`的标题，有就带着一起上车  
-*skucards分组*  
-包含`res.des`中type为5的子项目上车  
+整合`res.result.list`自身或者子项中id为'665,666'或者'667,668'且content不为'img'的集合。  
+*skucards分组*    
+整合`res.result.des`自身或者子项中type为5的集合。    
 *scrollers分组*  
-包含`res.des`中`img`为`xx.gov`的所有子项目  
-或包含 `res.des.leftStocks`的数目大于100的  
-以第一个满足条件的为最终上车对象  
+整合`res.result.skus`自身或者子项中'img'为'xx.gov'，或自身或者子项的'leftStocks'的数目大于100的集合。   
 
 
 ### filterRule [object]
-过滤筛选模块，可包含正向、反向过滤数据，可在`filterWithoutMerge`中配置是否要在原始数据中排除已经整合出来的数据。
-规则为：
+过滤模块，基于原始接口数据进行筛选，满足条件的集合会被**过滤掉**。可在`filterWithoutMerge`中配置是否要在原始数据中排除已经整合出来的数据。
+语法为：
 ```javascript
 {
-  filter:{
-    filterName: conditions
+  filterRule:{
+    path:{
+      filterName: conditions
+    }
   }
 }
 ```
 **filterName**  [string]  
-原始数据中存在的子项字段名称，对该子项进项处理。  
-例如，`mayLikeProducts`是原始数据中的猜你喜欢模块字段，已经存在的字段，那么我只需要其中特定条件的子数据，就可以在该字段`mayLikeProducts`上进行条件筛选。  
+原始数据中存在的子项字段名称，对该子项进项处理。    
 **conditions**  [object | boolean]  
 `filter`的对象为数组类型，`conditions`的目标是对数组内的子项进行处理。
 `filter`的对象为非数组类型，`conditions`的目标是对该`filter`的对象自身进行处理。
 简而言之，过滤对象本身为数组，则过滤条件适用于子项过滤，过滤对象为数值、字符串、布尔值、对象等则针对自身做过滤。
 
-```json
+
+**注意：**
+1. 过滤规则内不支持$|'或'规则，因为没有必要且不符合认知
+2. 过滤规则支持数组内子项过滤，但不支持数组内子项的子项过滤， $.a.b.c 即c才能是数组,如其他需求配合merge使用
+
+`filter`过滤规则分为`条件过滤`和`非条件过滤`：  
+**条件过滤：** 只针对于数组，对象类型，满足Key,Value相互匹配的条件产生过滤处理。  
+```javascript
+'$.result.list': {
+  'floorAppearance': ['articleDetailFloor_1', 'similarArticleFloor_2']  
+}
+```
+**非条件过滤：** 对象中字段，没有任何条件判断，找到次过滤字段即过滤。
+```javascript
+'$.result.config': {
+  '$^': ['head'] // 删除config中footer字段数据,无论其值是什么
+},
+```
+
+过滤`list`中有`floorApearrence`的字段，且值等于` articleDetailFloor_1`和等于`similarArticleFloor_2`的子项。
+
+```javascript
 {
-  "filterRule": {
-    "mayLikeProducts":{  
-      "$<groupId": "8414500",
-      "$<>shopId": ["024100","024112"],
-      "$|": {
-        "groupName": "今日推荐",
-        "shopName": "戴尔商用商红专卖店"
-      }
+    // **** list是数组类型，其后条件是针对子项进项筛选 ****
+    '$.result.list': {
+      'floorAppearance': ['articleDetailFloor_1', 'similarArticleFloor_2']
     },
-    "recommendProducts":{  
-      "$>=leftStocks": "1000" 
+}
+```
+过滤`list`中有`floorApearrence`的字段，且值不等于` articleDetailFloor_2`都过滤掉。  
+
+```javascript
+{
+    // **** list是数组类型，其后条件是针对子项进项筛选 ****
+    '$.result.list': {
+      '$!=floorAppearance': 'similarArticleFloor_2'
     },
-    "$|":{
-      "headInfo": {
-        "$!=hotProducts": "0" 
-      },
-      "mayLikeProducts": {
-        "$>timeBegin": "1550163689000"  
-      }
-    }
+}
+```
+过滤`list`中没有`description`的子项
+
+```javascript
+{
+  // **** list是数组类型，其后条件是针对子项进项筛选 ****
+  '$.result.list': {
+    'description': 'undefined'
   }
 }
 ```
-*mayLikeProducts* 为数组满足以下条件,选择保留`子项`  
-保留`groupId`小于`8414500`且`shopId`在`024100`和`024112`之间的子项目   
-或者保留`groupName`为'今日推荐'且`shopName`为'戴尔商用商红专卖店'的子项目     
-
-*recommendProducts*为对象,满足以下条件,选择排除或者保留`自身`    
-保留库存大于等于1000的`recommendProducts`自身，或者保留`headInfo`，只要子项`hotProducts`不为0  
-保留`mayLikeProducts`，只要子项`timeBegin`大于`1550163689000`
-
-
-以下这种情况，就是过滤掉`mayLikeProducts`和`recommendProducts`。
-
-```json
+过滤`list`中含有`floorApearrence`字段的所有子项
+```javascript
 {
- "$^": ["mayLikeProducts","recommendProducts"]
+  // **** list是数组类型，其后条件是针对子项进项筛选 ****
+  '$.result.list': {
+    '$^': ['floorApearrence']
+  }
 }
-
 ```
+
+过滤`config`中`footer`和`header`字段数据,无论其值是什么
+```javascript
+{
+  // **** config 是对象类型，其后条件对自身进行筛选 ****
+  '$.result.config': {
+    '$^': ['footer','header'] 
+  }
+}
+```
+
+
 **完整单接口请求：**
 ```javascript
 module.exports = {
@@ -279,10 +298,33 @@ module.exports = {
   },
   'filterWithoutMerge': true,
   'mergeRule': {
+    'skusOrImgs': {
+      '$.result.list.description': {
+        'type': '3',
+        '$|': {
+          'type': '2'
+        }
+      }
+    },
+    'authorDetailFloors': {
+      '$.result.list': {
+        '$$floorAppearance': ['authorDetailFloor', 'g']
+      }
+    }
   },
   'filterRule': {
+    '$.result.list': {
+      'floorAppearance': ['articleDetailFloor_1', 'similarArticleFloor_2']
+    },
+    '$.result.config': {
+      '$^': ['head']
+    },
+    '$.result': {
+      '$^': ['pageView', 'pageViewStr']
+    }
   }
 }
+
 ```
 
 
