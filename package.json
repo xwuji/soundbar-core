@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "cwg-json-query": "^1.0.5"
+  }
+}
