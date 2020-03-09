@@ -1,12 +1,12 @@
 const { isArray, isUndefined, isObject } = require('../lib/types.js')
 const { REGMATCH } = require('../config.js')
-const functions = {
+const soundbarFunc = {
   sourceMatchConditions (sourceData, conditions) {
     const { REG_NOT, REG_LT, REG_LTE, REG_GT, REG_GTE, REG_NOTEQUAL, REG_BETWEEN, REG_EXP, REG_OR, REG_AND } = REGMATCH
     const ckeys = Object.keys(conditions)
     const ckeysLen = ckeys.length
     const deleteKeys = []
-    const { compareResult } = this
+    const { compareResult } = soundbarFunc
     let matched = true
     if (ckeysLen === 0) return false
     for (let i = 0; i < ckeysLen; i++) {
@@ -135,7 +135,7 @@ const functions = {
   * @returns {boolean}
   */
   compareResult (sourceData, key, condit, mSymbol) {
-    const { switchMathCompare } = this
+    const { switchMathCompare } = soundbarFunc
     const sourcePosValue = sourceData[key]
     if (!sourcePosValue) return false
     // 条件对比支持数组的长度和数值和字符串
@@ -149,4 +149,4 @@ const functions = {
     }
   }
 }
-module.exports = functions
+module.exports = soundbarFunc

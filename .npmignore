@@ -3,3 +3,4 @@ mock
 src
 .gitignore
 webpack.config.js
+output.js
