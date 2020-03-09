@@ -1,24 +1,21 @@
-const SOURCEDATA = require('./mock/source.js')
-const QUERYDATA = require('./mock/query.js')
-const TYPES = require('./types.js')
-const { regMatch } = require('./config')
-const { fetchOutKeyChild, sourceMatchConditions } = require('./functions.js')
-const { isArray, isObject } = TYPES
+const { fetchOutKeyChild, sourceMatchConditions } = require('../lib/functions.js')
+const { isArray, isObject } = require('../lib/types.js')
+const { REGMATCH } = require('../config.js')
+const mergeGroupsList = {}
 
-let mergeGroupsList = {}
-
-module.exports = function mergeGroupData () {
-  const { mergeRule } = QUERYDATA
-  const mergeGroupsListKeys = Object.keys(mergeRule) // merge自定义分组集合 ['skusOrImgs','authorDetailFloors']
+module.exports = function mergeGroupData (clientQueryMergeRule, sourceBody) {
+  if (!sourceBody) return
+  if (!clientQueryMergeRule) return sourceBody
+  const mergeGroupsListKeys = Object.keys(clientQueryMergeRule) // merge自定义分组集合 ['skusOrImgs','authorDetailFloors']
   const mergeGroupsListLen = mergeGroupsListKeys.length
   for (let i = 0; i < mergeGroupsListLen; i++) {
     let orBranchConditions
     const mergeGroupName = mergeGroupsListKeys[i]
-    const mergeGroup = mergeRule[mergeGroupName] // merge单个分组 'skusOrImgs'
+    const mergeGroup = clientQueryMergeRule[mergeGroupName] // merge单个分组 'skusOrImgs'
     mergeGroupsList[mergeGroupName] = []
     const mergeRulePathes = Object.keys(mergeGroup)
     const firstRulePath = mergeRulePathes[0] // 前期只考虑同纬度的筛选合并，多维度的合并筛选合并后期支持
-    const sourceRulePathData = sourceDataMapRulePath(firstRulePath)
+    const sourceRulePathData = sourceDataMapRulePath(firstRulePath, sourceBody)
     const conditions = mergeGroup[firstRulePath]
     // 如果条件中含有或(||)分支条件
     if (conditions['$|']) {
@@ -33,6 +30,7 @@ module.exports = function mergeGroupData () {
   }
   return mergeGroupsList
 }
+
 function addNewMergeData (params) {
   // 路径映射的集合和对应的条件进行匹配 匹配成功返回匹配的集合
   const { matched, sourceData } = sourceMatchConditions(params.sourceMatched, params.conditions)
@@ -87,9 +85,9 @@ function mergeHandler (sourceRulePathData, mergeGroupName, conditions) {
  * @param {string} rulePath
  * @returns 匹配到的所有集合
  */
-function sourceDataMapRulePath (rulePath) {
-  const { REG_RULEPATH } = regMatch
-  let resData = { ...SOURCEDATA }
+function sourceDataMapRulePath (rulePath, sourceBody) {
+  const { REG_RULEPATH } = REGMATCH
+  let resData = { ...sourceBody }
   if (rulePath.match(REG_RULEPATH)) {
     // 处理 '$.a.b.c'路径 a、b、c只能是对象或者数组形式
     const rulePathes = rulePath.split('.').splice(1) // ["a", "b", "c"]
@@ -98,7 +96,7 @@ function sourceDataMapRulePath (rulePath) {
       if (isObject(resData)) {
         resData = resData[rulePathes[i]]
       } else if (isArray(resData)) {
-        if (i + 1 !== rulePathLen) throw Error(`进入数组后筛选出来是最终层级，不能有更深的层级了，${rulePaths[i - 1]}是数组，${rulePaths[i]}是终点深度`)
+        if (i + 1 !== rulePathLen) throw Error(`进入数组后筛选出来是最终层级，不能有更深的层级了，${rulePathes[i - 1]}是数组，${rulePathes[i]}是终点深度`)
         resData = fetchOutKeyChild(resData, rulePathes[i])
       }
       if (!resData) return false

@@ -6,7 +6,7 @@ module.exports = {
     'functionId': 'discoveryFanAreaList',
     'clientVersion': '10.0.0'
   },
-  'filterWithoutMerge': true,
+  // 'filterWithoutMerge': true,
   'mergeRule': {
     // 满足条件的合并到自定义字段中
     'skusOrImgs': {

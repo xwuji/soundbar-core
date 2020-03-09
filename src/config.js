@@ -1,5 +1,5 @@
 module.exports = {
-  regMatch: {
+  REGMATCH: {
     REG_AND: /^\$&$/g,
     REG_OR: /^\$\|$/g,
     REG_NOT: /^\$\^$/g,

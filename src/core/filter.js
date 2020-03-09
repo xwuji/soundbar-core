@@ -1,13 +1,11 @@
-const SOURCEDATA = require('./mock/source.js')
-const QUERYDATA = require('./mock/query.js')
-const TYPES = require('./types.js')
-const { sourceMatchConditions } = require('./functions.js')
-const { isArray, isObject } = TYPES
+const { isArray, isObject } = require('../lib/types.js')
+const { sourceMatchConditions } = require('../lib/functions.js')
 
-module.exports = function filterGroupData () {
-  const { filterRule } = QUERYDATA
-  let filterResData = { ...SOURCEDATA }
-  let filterPathes = Object.keys(filterRule)
+module.exports = function filterGroupData (clientQueryFilterRule, sourceBody) {
+  if (!sourceBody) return
+  if (!clientQueryFilterRule) return sourceBody
+  let filterResData = { ...sourceBody }
+  let filterPathes = Object.keys(clientQueryFilterRule)
   // 排序，层级高的先处理
   filterPathes.sort((m, n) => {
     return m.length - n.length
@@ -17,7 +15,7 @@ module.exports = function filterGroupData () {
   for (let i = 0; i < filterPathesLen; i++) {
     let operatorData = filterResData
     const filterPath = filterPathes[i] // "$.result.list"
-    const conditions = filterRule[filterPath] // {}
+    const conditions = clientQueryFilterRule[filterPath] // {}
     const rulePathes = filterPath.split('.').splice(1)//  ['result','list']
     const rulePathLen = rulePathes.length
     for (let i = 0; i < rulePathLen; i++) {
