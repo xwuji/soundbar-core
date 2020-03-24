@@ -1,5 +1,5 @@
-const mergeGroupData = require('@core/merge.js')
-const filterGroupData = require('@core/filter.js')
+const MergeCore = require('@core/merge.js')
+const FilterCore = require('@core/filter.js')
 
 /**
  * mergeGroupData、filterGroupData
@@ -8,6 +8,6 @@ const filterGroupData = require('@core/filter.js')
  * @returns {object}
  */
 module.exports = {
-  mergeGroupData,
-  filterGroupData
+  MergeCore,
+  FilterCore
 }
