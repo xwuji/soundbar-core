@@ -1,5 +1,5 @@
-const mergeGroupData = require('./core/merge.js')
-const filterGroupData = require('./core/filter.js')
+const mergeGroupData = require('@core/merge.js')
+const filterGroupData = require('@core/filter.js')
 
 /**
  * mergeGroupData、filterGroupData

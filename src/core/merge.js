@@ -1,6 +1,6 @@
-const { fetchOutKeyChild, sourceMatchConditions } = require('../lib/functions.js')
-const { isArray, isObject } = require('../lib/types.js')
-const { REGMATCH } = require('../config.js')
+const { fetchOutKeyChild, sourceMatchConditions } = require('@lib/functions.js')
+const { isArray, isObject } = require('@lib/types.js')
+const { REGMATCH } = require('@config')
 const mergeGroupsList = {}
 
 module.exports = function mergeGroupData (clientQueryMergeRule, sourceBody) {

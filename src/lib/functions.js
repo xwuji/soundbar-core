@@ -1,5 +1,5 @@
-const { isArray, isUndefined, isObject } = require('../lib/types.js')
-const { REGMATCH } = require('../config.js')
+const { isArray, isUndefined, isObject } = require('@lib/types.js')
+const { REGMATCH } = require('@config')
 const soundbarFunc = {
   sourceMatchConditions (sourceData, conditions) {
     const { REG_NOT, REG_LT, REG_LTE, REG_GT, REG_GTE, REG_NOTEQUAL, REG_BETWEEN, REG_EXP, REG_OR, REG_AND } = REGMATCH

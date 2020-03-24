@@ -1,5 +1,5 @@
-const { isArray, isObject } = require('../lib/types.js')
-const { sourceMatchConditions } = require('../lib/functions.js')
+const { isArray, isObject } = require('@lib/types.js')
+const { sourceMatchConditions } = require('@lib/functions.js')
 
 module.exports = function filterGroupData (clientQueryFilterRule, sourceBody) {
   if (!sourceBody) return
