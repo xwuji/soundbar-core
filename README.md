@@ -12,14 +12,32 @@ ps:
 # 核心解释器调用
 ### 安装
 `jnpm i -S @jd/soundbar-core`
-### 使用
+
+### 调用方式
+#### 引入解释器功能类  
+`const { FilterCore, MergeCore } = require('@jd/soundbar-core')`    
+#### 实例化并入参    
+`const mergeCore = new MergeCore(mergeRule, sourceDB)`    
+`const filterCore = new FilterCore(filterRule, sourceDB)`    
+#### 执行实例中的get方法  
+`const mergeGroupData = mergeCore.getMergeGroup`   
+`const filterGroupData = filterCore.getFilterGroup`    
+#### 实例参数
+@Param {mergeRule} 用户请求参数中的mergeRule  
+@Param {filterRule} 用户请求参数中的filterRule  
+@Param {sourceDB} 上游接口请求返回的原始数据  
+
+### 使用示例
 ```js
-// @param {clientQueryMergeRule} 用户请求参数中的mergeRule或者filterRule 需求中间层结构出来入参
-// @param {sourceBody} 上游接口请求返回的原始数据
-// 将_mergeGroupData或者_filterGroupData 夹层服务后 处理返回给客户端
-const { mergeGroupData,filterGroupData } = require('@jd/soundbar-core')
-const _mergeGroupData = mergeGroupData(clientQueryMergeRule, sourceBody)
-const _filterGroupData = mergeGroupData(clientQueryFilterRule, sourceBody)
+const { FilterCore, MergeCore } = require('@jd/soundbar-core')
+
+const mergeCore = new MergeCore(mergeRule, sourceDB)
+const mergeGroupData = mergeCore.getMergeGroup
+console.log(JSON.stringify(mergeGroupData))
+
+const filterCore = new FilterCore(filterRule, sourceDB)
+const filterGroupData = filterCore.getFilterGroup
+console.log(JSON.stringify(filterGroupData))
 ```
 
 
