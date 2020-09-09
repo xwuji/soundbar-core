@@ -8,7 +8,7 @@ const path = require('path')
 export default {
   input: 'src/index.js',
   output: {
-    file: 'build/bundle.js',
+    file: 'dist/index.js',
     format: 'umd',
     name: 'soundbarCore'
   },

@@ -1,6 +1,7 @@
 node_modules
 mock
 src
+*.config.js
 .gitignore
-webpack.config.js
 output.js
+test
