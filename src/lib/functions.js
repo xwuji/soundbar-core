@@ -1,76 +1,67 @@
-const { isArray, isUndefined, isObject } = require('@lib/types.js')
-const { REGMATCH } = require('@config')
-const soundbarFunc = {
-  sourceMatchConditions (sourceData, conditions) {
-    const { REG_NOT, REG_LT, REG_LTE, REG_GT, REG_GTE, REG_NOTEQUAL, REG_BETWEEN, REG_EXP, REG_OR, REG_AND } = REGMATCH
-    const ckeys = Object.keys(conditions)
-    const ckeysLen = ckeys.length
-    const deleteKeys = []
-    const { compareResult } = soundbarFunc
-    let matched = true
+import OPR_REG_MATCH from '@config'
+import { isArray, isUndefined, isObject } from '@lib/types.js'
+export default{
+  handleSourceKeyValueByRules (sourcekeyValue, rules) {
+    const {
+      REG_LT,
+      REG_GT,
+      REG_LTE,
+      REG_GTE,
+      REG_EQUAL,
+      REG_NOTEQUAL,
+      REG_BETWEEN,
+      REG_EQUAL_TYPE,
+      REG_NOTEQUAL_TYPE,
+      REG_EXP,
+      REG_DEL
+    } = OPR_REG_MATCH
+    const ruleKeys = Object.keys(rules)
+    const ckeysLen = ruleKeys.length
+    const { compareResult } = this
+    let isSourceMatchRule = true
     if (ckeysLen === 0) return false
     for (let i = 0; i < ckeysLen; i++) {
-      let ckey = ckeys[i] // 匹配的key
-      let condit = conditions[ckey] // 匹配的conidtion
-      if (ckey.match(REG_NOT)) {
-        const deleteKey = ckey.replace(REG_NOT, '')
-        deleteKeys.push = deleteKey
-      } else if (ckey.match(REG_LT)) {
-        const key = ckey.replace(REG_LT, '')
-        const compareRes = compareResult(sourceData, key, condit, 'lt')
-        matched = matched && compareRes
-      } else if (ckey.match(REG_LTE)) {
-        const key = ckey.replace(REG_LTE, '')
-        const compareRes = compareResult(sourceData, key, condit, 'lte')
-        matched = matched && compareRes
-      } else if (ckey.match(REG_GT)) {
-        const key = ckey.replace(REG_GT, '')
-        const compareRes = compareResult(sourceData, key, condit, 'gt')
-        matched = matched && compareRes
-      } else if (ckey.match(REG_GTE)) {
-        const key = ckey.replace(REG_GTE, '')
-        const compareRes = compareResult(sourceData, key, condit, 'gte')
-        matched = matched && compareRes
-      } else if (ckey.match(REG_NOTEQUAL)) {
-        const key = ckey.replace(REG_NOTEQUAL, '')
-        const compareRes = compareResult(sourceData, key, condit, 'notEqual')
-        matched = matched && compareRes
-      } else if (ckey.match(REG_BETWEEN)) {
-        const key = ckey.replace(REG_BETWEEN, '')
-        const compareRes = compareResult(sourceData, key, condit, 'bt')
-        matched = matched && compareRes
-      } else if (ckey.match(REG_EXP)) {
-        const key = ckey.replace(REG_EXP, '')
-        const compareRes = compareResult(sourceData, key, condit, 'reg')
-        matched = matched && compareRes
-      } else if (!ckey.match(REG_OR)) {
-        // and逻辑直接忽略符号，执行默认逻辑
-        let key
-        if (ckey.match(REG_AND)) {
-          key = ckey.replace(REG_AND, '')
-        } else {
-          key = ckey
-        }
-        if (isArray(condit)) {
+      let ruleKey = ruleKeys[i] // 匹配的规则key
+      let ruleValue = rules[ruleKey] // 匹配的规则条件
+      if (ruleKey.match(REG_DEL)) {
+        const deleteKeys = ruleKey.replace(REG_DEL, '')
+        if (isObject(sourcekeyValue) && sourcekeyValue.hasOwnProperty(deleteKeys)) delete sourcekeyValue[deleteKeys]
+      } else if (ruleKey.match(REG_LT)) {
+        isSourceMatchRule = isSourceMatchRule && compareResult(sourcekeyValue, ruleKey.replace(REG_LT, ''), ruleValue, 'lt')
+      } else if (ruleKey.match(REG_GT)) {
+        isSourceMatchRule = isSourceMatchRule && compareResult(sourcekeyValue, ruleKey.replace(REG_GT, ''), ruleValue, 'gt')
+      } else if (ruleKey.match(REG_LTE)) {
+        isSourceMatchRule = isSourceMatchRule && compareResult(sourcekeyValue, ruleKey.replace(REG_LTE, ''), ruleValue, 'lte')
+      } else if (ruleKey.match(REG_GTE)) {
+        isSourceMatchRule = isSourceMatchRule && compareResult(sourcekeyValue, ruleKey.replace(REG_GTE, ''), ruleValue, 'gte')
+      } else if (ruleKey.match(REG_NOTEQUAL)) {
+        isSourceMatchRule = isSourceMatchRule && compareResult(sourcekeyValue, ruleKey.replace(REG_NOTEQUAL, ''), ruleValue, 'notEqual')
+      } else if (ruleKey.match(REG_BETWEEN)) {
+        isSourceMatchRule = isSourceMatchRule && compareResult(sourcekeyValue, ruleKey.replace(REG_BETWEEN, ''), ruleValue, 'bt')
+      } else if (ruleKey.match(REG_EXP)) {
+        isSourceMatchRule = isSourceMatchRule && compareResult(sourcekeyValue, ruleKey.replace(REG_EXP, ''), ruleValue, 'reg')
+      } else if (ruleKey.match(REG_EQUAL_TYPE)) {
+        isSourceMatchRule = isSourceMatchRule && compareResult(sourcekeyValue, ruleKey.replace(REG_EQUAL_TYPE, ''), ruleValue, 'etype')
+      } else if (ruleKey.match(REG_NOTEQUAL_TYPE)) {
+        isSourceMatchRule = isSourceMatchRule && compareResult(sourcekeyValue, ruleKey.replace(REG_NOTEQUAL_TYPE, ''), ruleValue, 'netype')
+      } else if (!ruleKey.match(/^\$/g) || ruleKey.match(REG_EQUAL)) {
+        // 当匹配$=符号或者没有符号，规则条件是数组则数组内的值任意满足源字段的值即可
+        const bareKey = ruleKey.match(REG_EQUAL) ? ruleKey.replace(REG_EQUAL, '') : ruleKey
+        if (isArray(ruleValue)) {
           // 多种类型值得对比，数组中有对比符合的子项即返回成功
           let itemMatch = false
-          condit.map((conditItem) => {
-            itemMatch = itemMatch || compareResult(sourceData, key, conditItem)
+          ruleValue.map((conditItem) => {
+            itemMatch = itemMatch || compareResult(sourcekeyValue, bareKey, conditItem)
           })
-          matched = matched && itemMatch
+          isSourceMatchRule = isSourceMatchRule && itemMatch
         } else {
-          matched = matched && compareResult(sourceData, key, condit)
+          isSourceMatchRule = isSourceMatchRule && compareResult(sourcekeyValue, bareKey, ruleValue)
         }
       }
     }
-    if (deleteKeys.length > 0) {
-      deleteKeys.map((dk) => {
-        if (isObject(sourceData) && sourceData.hasOwnProperty(dk)) delete sourceData[dk]
-      })
-    }
     return {
-      sourceData,
-      matched
+      sourcekeyValue,
+      matched: isSourceMatchRule
     }
   },
   /**
@@ -89,6 +80,35 @@ const soundbarFunc = {
     })
     return resGroup // [mutilRes: true,[],[]]
   },
+
+  /**
+  * 返回源数据和条件逐条比较的结果
+  * @param {array | object} sourcekeyValue 路径匹配到的原数据集合
+  * @param {string} bareKey 条件集合中的单条key
+  * @param {*} value 条件集合中的单条value
+  * @param {*} mSymbol 运算符
+  * @returns {boolean}
+  */
+  compareResult (sourcekeyValue, bareKey, ruleValue, mSymbol) {
+    const { dispatchSymbolCompare } = this
+    const sourcePosValue = sourcekeyValue[bareKey]
+    if (!sourcePosValue) return false
+    const sourceValTypeIsArr = isArray(sourcePosValue)
+    const valTypeIsStr = typeof sourcePosValue === 'string'
+    const valTypeIsNum = typeof sourcePosValue === 'number'
+    const compareType = mSymbol === 'netype' || mSymbol === 'etype'
+    // 支持数组的长度、数值和字符串值的对比，新增类型对比，不支持复杂类型值的深比较
+    if (sourceValTypeIsArr || valTypeIsStr || valTypeIsNum) {
+      // !compareType && ... 类型的比较不适用下面的抛错
+      // compareType ? ruleValue.toLowerCase() ... 规则类型字符串转换成小写统一
+      // sourceValTypeIsArr ? sourcePosValue.length : sourcePosValue 数组类型用长度，数字字符串用值
+      if (!compareType && sourceValTypeIsArr && typeof ruleValue !== 'number') throw Error('Source Value Type Is Array, Match length ,Rule Condition Must Be Number')
+      return dispatchSymbolCompare(sourceValTypeIsArr ? sourcePosValue.length : sourcePosValue, compareType ? ruleValue.toLowerCase() : ruleValue, mSymbol)
+    } else {
+      return false
+    }
+  },
+
   /**
    * 根据运算符进行比较计算
    * @param {string | number} x
@@ -96,57 +116,38 @@ const soundbarFunc = {
    * @param {string} mSymbol 运算符
    * @returns
    */
-  switchMathCompare (x, y, mSymbol) {
+  dispatchSymbolCompare (x, y, mSymbol) {
     try {
       switch (mSymbol) {
         case 'lt':
           if (Object.is(+x, NaN) || Object.is(+y, NaN)) return false
           else return +x < +y
-        case 'lte':
-          if (Object.is(+x, NaN) || Object.is(+y, NaN)) return false
-          else return +x <= +y
         case 'gt':
           if (Object.is(+x, NaN) || Object.is(+y, NaN)) return false
           else return +x > +y
+        case 'lte':
+          if (Object.is(+x, NaN) || Object.is(+y, NaN)) return false
+          else return +x <= +y
         case 'gte':
           if (Object.is(+x, NaN) || Object.is(+y, NaN)) return false
           else return +x >= +y
         case 'notEqual':
           return x !== y
-        case 'bt':
+        case 'bt': // y = [from,end]
           if (Object.is(+x, NaN) || Object.is(+y[0], NaN) || Object.is(+y[1], NaN)) return false
           else return x > y[0] && x < y[1]
         case 'reg':
           const reg = new RegExp(y[0], y[1])
           return !!x.match(reg)
+        case 'etype':
+          return
+        case 'netype':
+          return
         default:
           return x === y
       }
     } catch (error) {
       return false
     }
-  },
-  /**
-  * 返回源数据和条件逐条比较的结果
-  * @param {array | object} sourceData 路径匹配到的原数据集合
-  * @param {string} key 条件集合中的单条key
-  * @param {*} value 条件集合中的单条value
-  * @param {*} mSymbol 运算符
-  * @returns {boolean}
-  */
-  compareResult (sourceData, key, condit, mSymbol) {
-    const { switchMathCompare } = soundbarFunc
-    const sourcePosValue = sourceData[key]
-    if (!sourcePosValue) return false
-    // 条件对比支持数组的长度和数值和字符串
-    if (isArray(sourcePosValue)) {
-      if (typeof condit !== 'number') throw Error('Arrays condition value not a number')
-      return switchMathCompare(sourcePosValue.length, condit, mSymbol)
-    } else if (typeof sourcePosValue === 'string' || typeof sourcePosValue === 'number') {
-      return switchMathCompare(sourcePosValue, condit, mSymbol)
-    } else {
-      return false
-    }
   }
 }
-module.exports = soundbarFunc

@@ -1,7 +1,7 @@
-const { isArray, isObject } = require('@lib/types.js')
-const { sourceMatchConditions } = require('@lib/functions.js')
+import { isArray, isObject } from '@lib/types.js'
+import { handleSourceKeyValueByRules } from '@lib/functions.js'
 
-class FilterCore {
+export default class FilterCore {
   constructor (clientQueryFilterRule, sourceBody) {
     this.clientQueryFilterRule = clientQueryFilterRule
     this.sourceBody = sourceBody
@@ -54,9 +54,8 @@ class FilterCore {
   arrayFilterEvent (sourceArray, conditions) {
     if (!isArray(sourceArray)) return false
     return sourceArray.filter((sourcePosData) => {
-      const { matched } = sourceMatchConditions(sourcePosData, conditions)
+      const { matched } = handleSourceKeyValueByRules(sourcePosData, conditions)
       return !matched
     })
   }
 }
-module.exports = FilterCore

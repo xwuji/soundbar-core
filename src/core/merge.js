@@ -1,8 +1,7 @@
-const { fetchOutKeyChild, sourceMatchConditions } = require('@lib/functions.js')
-const { isArray, isObject } = require('@lib/types.js')
-const { REGMATCH } = require('@config')
-
-class MergeCore {
+import { isArray, isObject } from '@lib/types.js'
+import { fetchOutKeyChild, handleSourceKeyValueByRules } from '@lib/functions.js'
+import { OPR_REG_MATCH } from '@config'
+export default class MergeCore {
   constructor (clientQueryMergeRule, sourceBody) {
     this.mergeGroupsList = {}
     this.clientQueryMergeRule = clientQueryMergeRule
@@ -38,7 +37,7 @@ class MergeCore {
 
   addNewMergeData (params) {
     // 路径映射的集合和对应的条件进行匹配 匹配成功返回匹配的集合
-    const { matched, sourceData } = sourceMatchConditions(params.sourceMatched, params.conditions)
+    const { matched, sourceData } = handleSourceKeyValueByRules(params.sourceMatched, params.conditions)
     if (matched) {
       this.mergeGroupsList[params.mergeGroupName].push(sourceData)
     } else {
@@ -91,7 +90,7 @@ class MergeCore {
    * @returns 匹配到的所有集合
    */
   sourceDataMapRulePath (rulePath, sourceBody) {
-    const { REG_RULEPATH } = REGMATCH
+    const { REG_RULEPATH } = OPR_REG_MATCH
     let resData = { ...sourceBody }
     if (rulePath.match(REG_RULEPATH)) {
       // 处理 '$.a.b.c'路径 a、b、c只能是对象或者数组形式
@@ -119,4 +118,3 @@ class MergeCore {
     return resData // [] or {}
   }
 }
-module.exports = MergeCore
