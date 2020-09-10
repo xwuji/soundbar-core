@@ -1,5 +1,5 @@
 import OPR_REG_MATCH from '@config'
-import { isArray, isUndefined, isObject } from '@lib/types.js'
+import { isArray, isUndefined, isObject, isNull } from '@lib/types.js'
 export default{
   handleSourceKeyValueByRules (sourcekeyValue, rules) {
     const {
@@ -108,7 +108,22 @@ export default{
       return false
     }
   },
-
+  /**
+   * 字段类型-字符串
+   * @param {any} o
+   * @returns
+   */
+  transTypeToString (o) {
+    const typeofStr = typeof o // string、number、boolean、function、sysmbol
+    if (typeofStr === 'object' || typeofStr === 'undefined') {
+      if (isUndefined(o)) return 'undefined'
+      if (isNull(o)) return 'null'
+      if (isArray(o)) return 'array'
+      if (isObject(o)) return 'object'
+    } else {
+      return typeofStr
+    }
+  },
   /**
    * 根据运算符进行比较计算
    * @param {string | number} x
@@ -117,6 +132,7 @@ export default{
    * @returns
    */
   dispatchSymbolCompare (x, y, mSymbol) {
+    const { transTypeToString } = this
     try {
       switch (mSymbol) {
         case 'lt':
@@ -140,9 +156,9 @@ export default{
           const reg = new RegExp(y[0], y[1])
           return !!x.match(reg)
         case 'etype':
-          return
+          return transTypeToString(x) === y
         case 'netype':
-          return
+          return transTypeToString(x) !== y
         default:
           return x === y
       }

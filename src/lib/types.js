@@ -150,6 +150,9 @@ export default {
   isFunction (o) {
     return typeof o === 'function'
   },
+  isSymbol (o) {
+    return typeof o === 'symbol'
+  },
   isArray (o) {
     if (Array.isArray) {
       return Array.isArray(o)

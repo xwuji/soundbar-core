@@ -2,33 +2,33 @@ import { isArray, isObject } from '@lib/types.js'
 import { handleSourceKeyValueByRules } from '@lib/functions.js'
 
 export default class FilterCore {
-  constructor (clientQueryFilterRule, sourceBody) {
-    this.clientQueryFilterRule = clientQueryFilterRule
+  constructor (queryFilterRule, sourceBody) {
+    this.queryFilterRule = queryFilterRule
     this.sourceBody = sourceBody
   }
   get getFilterGroup () {
-    const { clientQueryFilterRule, sourceBody } = this
+    const { queryFilterRule, sourceBody } = this
     if (!sourceBody) return
-    if (!clientQueryFilterRule) return sourceBody
-    let filterResData = { ...sourceBody }
-    let filterPathes = Object.keys(clientQueryFilterRule)
-    // 排序，层级高的先处理
-    filterPathes.sort((m, n) => {
+    if (!queryFilterRule) return sourceBody
+    let cpSouceBody = { ...sourceBody }
+    let rulePathesArr = Object.keys(queryFilterRule)
+    // 排序，越短层级越高，层级高的先处理
+    rulePathesArr.sort((m, n) => {
       return m.length - n.length
     })
-    // filterPathes => ["$.code","$.result.list","$.result.config","$.result.pageView","$.result.list.description"]
-    const filterPathesLen = filterPathes.length
-    for (let i = 0; i < filterPathesLen; i++) {
-      let operatorData = filterResData
-      const filterPath = filterPathes[i] // "$.result.list"
-      const conditions = clientQueryFilterRule[filterPath] // {}
-      const rulePathes = filterPath.split('.').splice(1)//  ['result','list']
-      const rulePathLen = rulePathes.length
-      for (let i = 0; i < rulePathLen; i++) {
-        operatorData = operatorData[rulePathes[i]] // filterResData['result']['list']
-        if (isArray(operatorData) && (i === rulePathLen - 1)) {
+    // rulePathesArr => ["$.code","$.result.list","$.result.config","$.result.pageView","$.result.list.description"]
+    const rulePathesArrLen = rulePathesArr.length
+    for (let i = 0; i < rulePathesArrLen; i++) {
+      let operatorData = cpSouceBody
+      const filterPath = rulePathesArr[i] // "$.result.list"
+      const conditions = queryFilterRule[filterPath] // {}
+      const rulePathSplitArr = filterPath.split('.').splice(1)//  ['result','list']
+      const rulePathSplitArrLen = rulePathSplitArr.length
+      for (let i = 0; i < rulePathSplitArrLen; i++) {
+        operatorData = operatorData[rulePathSplitArr[i]] // cpSouceBody['result']['list']
+        if (isArray(operatorData) && (i === rulePathSplitArrLen - 1)) {
           // 寻址操作
-          const filterArray = this.arrayFilterEvent(operatorData, conditions)
+          const filterArray = this.filterMatchedData(operatorData, conditions)
           if (filterArray) {
             operatorData.length = 0
             filterArray.map((matched) => {
@@ -36,14 +36,15 @@ export default class FilterCore {
             })
           }
         } else {
-          this.objectFilterEvent(operatorData, conditions)
+          this.deleteKeyByOprDel(operatorData, conditions)
         }
       }
     }
-    return filterResData
+    return cpSouceBody
   }
-  objectFilterEvent (sourceObject, conditions) {
+  deleteKeyByOprDel (sourceObject, conditions) {
     const filterKeysArray = conditions['$^']
+    // 没有删除符号或者被删除的源不是对象 中止操作
     if (!isObject(sourceObject) || !filterKeysArray) return false
     filterKeysArray.map((filterKey) => {
       if (sourceObject.hasOwnProperty(filterKey)) {
@@ -51,11 +52,12 @@ export default class FilterCore {
       }
     })
   }
-  arrayFilterEvent (sourceArray, conditions) {
+  // 过滤不匹配的规则
+  filterMatchedData (sourceArray, conditions) {
     if (!isArray(sourceArray)) return false
     return sourceArray.filter((sourcePosData) => {
       const { matched } = handleSourceKeyValueByRules(sourcePosData, conditions)
-      return !matched
+      return matched
     })
   }
 }
