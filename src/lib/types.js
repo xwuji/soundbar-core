@@ -137,41 +137,40 @@ function deepCompare (x, y) {
   }
   return true
 }
-export default {
-  isStr (o) {
-    return typeof o === 'string'
-  },
-  isNum (o) {
-    return typeof o === 'number'
-  },
-  isBoolean (o) {
-    return typeof o === 'boolean'
-  },
-  isFunction (o) {
-    return typeof o === 'function'
-  },
-  isSymbol (o) {
-    return typeof o === 'symbol'
-  },
-  isArray (o) {
-    if (Array.isArray) {
-      return Array.isArray(o)
-    } else {
-      return getType(o) === '[object Array]'
-    }
-  },
-  isObject (o) {
-    return getType(o) === '[object Object]'
-  },
-  isNull (o) {
-    return getType(o) === '[object Null]'
-  },
-  isUndefined (o) {
-    return getType(o) === '[object Undefined]'
-  },
-  isEmptyObj (o) {
-    if (!this.isObject(o)) throw new Error('Not an Object')
-    polyFillObjectKeys()
-    return Object.keys(o).length === 0
+
+export function isStr (o) {
+  return typeof o === 'string'
+}
+export function isNum (o) {
+  return typeof o === 'number'
+}
+export function isBoolean (o) {
+  return typeof o === 'boolean'
+}
+export function isFunction (o) {
+  return typeof o === 'function'
+}
+export function isSymbol (o) {
+  return typeof o === 'symbol'
+}
+export function isArray (o) {
+  if (Array.isArray) {
+    return Array.isArray(o)
+  } else {
+    return getType(o) === '[object Array]'
   }
+}
+export function isObject (o) {
+  return getType(o) === '[object Object]'
+}
+export function isNull (o) {
+  return getType(o) === '[object Null]'
+}
+export function isUndefined (o) {
+  return getType(o) === '[object Undefined]'
+}
+export function isEmptyObj (o) {
+  if (!this.isObject(o)) throw new Error('Not an Object')
+  polyFillObjectKeys()
+  return Object.keys(o).length === 0
 }

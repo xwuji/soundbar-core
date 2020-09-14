@@ -2,34 +2,35 @@ import { isArray, isObject } from '@lib/types.js'
 import { fetchOutKeyChild, handleSourceKeyValueByRules } from '@lib/functions.js'
 import { OPR_REG_MATCH } from '@config'
 export default class MergeCore {
-  constructor (clientQueryMergeRule, sourceBody) {
+  constructor (queryMergeRules, sourceBody) {
     this.mergeGroupsList = {}
-    this.clientQueryMergeRule = clientQueryMergeRule
+    this.queryMergeRules = queryMergeRules
     this.sourceBody = sourceBody
   }
   get getMergeGroup () {
     if (!this.sourceBody) return
-    if (!this.clientQueryMergeRule) return this.sourceBody
-    const mergeGroupsListKeys = Object.keys(this.clientQueryMergeRule) // merge自定义分组集合 ['skusOrImgs','authorDetailFloors']
-    const mergeGroupsListLen = mergeGroupsListKeys.length
-    for (let i = 0; i < mergeGroupsListLen; i++) {
+    if (!this.queryMergeRules) return this.sourceBody
+    const mergeGroupKeys = Object.keys(this.queryMergeRules) // merge自定义分组集合 ['skusOrImgs','authorDetailFloors']
+    const mergeGroupKeysLen = mergeGroupKeys.length
+    for (let i = 0; i < mergeGroupKeysLen; i++) {
       let orBranchConditions
-      const mergeGroupName = mergeGroupsListKeys[i]
-      const mergeGroup = this.clientQueryMergeRule[mergeGroupName] // merge单个分组 'skusOrImgs'
-      this.mergeGroupsList[mergeGroupName] = []
-      const mergeRulePathes = Object.keys(mergeGroup)
-      const firstRulePath = mergeRulePathes[0] // 前期只考虑同纬度的筛选合并，多维度的合并筛选合并后期支持
+      const mergeGroupCurrKey = mergeGroupKeys[i]
+      const mergeGroupRule = this.queryMergeRules[mergeGroupCurrKey] // merge单个分组 'skusOrImgs'
+      this.mergeGroupsList[mergeGroupCurrKey] = []
+      const mergeRulePathes = Object.keys(mergeGroupRule)
+      const firstRulePath = mergeRulePathes[0] // 注意 前期只考虑同纬度的筛选合并，多维度的合并筛选合并后期支持
       const sourceRulePathData = this.sourceDataMapRulePath(firstRulePath, this.sourceBody)
-      const conditions = mergeGroup[firstRulePath]
+      const conditions = mergeGroupRule[firstRulePath]
+
       // 如果条件中含有或(||)分支条件
       if (conditions['$|']) {
         // 删除原条件组中的或逻辑，储存在变量中
         orBranchConditions = conditions['$|']
         delete conditions['$|']
       }
-      this.mergeHandler(sourceRulePathData, mergeGroupName, conditions)
-      if (this.mergeGroupsList[mergeGroupName].length === 0) { // 原条件不匹配采用备用条件
-        this.mergeHandler(sourceRulePathData, mergeGroupName, orBranchConditions)
+      this.mergeHandler(sourceRulePathData, mergeGroupCurrKey, conditions)
+      if (this.mergeGroupsList[mergeGroupCurrKey].length === 0) { // 原条件不匹配采用备用条件 或的逻辑  后期支持多条件合并？
+        this.mergeHandler(sourceRulePathData, mergeGroupCurrKey, orBranchConditions)
       }
     }
     return this.mergeGroupsList
@@ -37,9 +38,9 @@ export default class MergeCore {
 
   addNewMergeData (params) {
     // 路径映射的集合和对应的条件进行匹配 匹配成功返回匹配的集合
-    const { matched, sourceData } = handleSourceKeyValueByRules(params.sourceMatched, params.conditions)
+    const { matched, sourcekeyValue } = handleSourceKeyValueByRules(params.sourceMatched, params.conditions)
     if (matched) {
-      this.mergeGroupsList[params.mergeGroupName].push(sourceData)
+      this.mergeGroupsList[params.mergeGroupName].push(sourcekeyValue)
     } else {
       return false
     }
