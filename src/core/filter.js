@@ -1,4 +1,4 @@
-import { isArray, isObject } from '@lib/types.js'
+import { isArray, isObject, isEmptyObj } from '@lib/types.js'
 import { handleSourceKeyValueByRules } from '@lib/functions.js'
 
 export default class FilterCore {
@@ -9,7 +9,7 @@ export default class FilterCore {
   get getFilterGroup () {
     const { queryFilterRules, sourceBody } = this
     if (!sourceBody) return
-    if (!queryFilterRules) return sourceBody
+    if (!queryFilterRules || isEmptyObj(queryFilterRules)) return sourceBody
     let cpSouceBody = { ...sourceBody }
     // 取所有规则的路径
     let rulePathesArr = Object.keys(queryFilterRules)
@@ -31,7 +31,7 @@ export default class FilterCore {
         // 数组中根据条件过滤子元素，对象字面量中直接删除方式过滤子元素
         if (isArray(operatorData) && (i === rulePathSplitArrLen - 1)) {
           // 源数据节点是数组类型且是末点元素
-          const remainDataArray = this.getMatchedData(operatorData, conditions)
+          const remainDataArray = this.filterMatchedData(operatorData, conditions)
           if (remainDataArray.length > 0) {
             // 寻址操作 用操作变量改变源数据
             operatorData.length = 0
@@ -50,12 +50,12 @@ export default class FilterCore {
     }
     return cpSouceBody
   }
-  // 过滤不匹配的规则  保留剩下的匹配的
-  getMatchedData (sourceArray, conditions) {
+  // 过滤满足条件的数据对象
+  filterMatchedData (sourceArray, conditions) {
     if (!isArray(sourceArray)) return false
     return sourceArray.filter((sourcePosData) => {
       const { matched } = handleSourceKeyValueByRules(sourcePosData, conditions)
-      return matched
+      return !matched
     })
   }
 }

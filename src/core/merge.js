@@ -1,4 +1,4 @@
-import { isArray, isObject } from '@lib/types.js'
+import { isArray, isObject, isEmptyObj } from '@lib/types.js'
 import { fetchOutKeyChild, handleSourceKeyValueByRules } from '@lib/functions.js'
 import { OPR_REG_MATCH } from '@config'
 export default class MergeCore {
@@ -8,18 +8,19 @@ export default class MergeCore {
     this.sourceBody = sourceBody
   }
   get getMergeGroup () {
-    if (!this.sourceBody) return
-    if (!this.queryMergeRules) return this.sourceBody
-    const mergeGroupKeys = Object.keys(this.queryMergeRules) // merge自定义分组集合 ['skusOrImgs','authorDetailFloors']
+    const { sourceBody, queryMergeRules } = this
+    if (!sourceBody) return
+    if (!queryMergeRules || isEmptyObj(queryMergeRules)) return sourceBody
+    const mergeGroupKeys = Object.keys(queryMergeRules) // merge自定义分组集合 ['skusOrImgs','authorDetailFloors']
     const mergeGroupKeysLen = mergeGroupKeys.length
     for (let i = 0; i < mergeGroupKeysLen; i++) {
       let orBranchConditions
       const mergeGroupCurrKey = mergeGroupKeys[i]
-      const mergeGroupRule = this.queryMergeRules[mergeGroupCurrKey] // merge单个分组 'skusOrImgs'
+      const mergeGroupRule = queryMergeRules[mergeGroupCurrKey] // merge单个分组 'skusOrImgs'
       this.mergeGroupsList[mergeGroupCurrKey] = []
       const mergeRulePathes = Object.keys(mergeGroupRule)
       const firstRulePath = mergeRulePathes[0] // 注意 前期只考虑同纬度的筛选合并，多维度的合并筛选合并后期支持
-      const sourceRulePathData = this.sourceDataMapRulePath(firstRulePath, this.sourceBody)
+      const sourceRulePathData = this.sourceDataMapRulePath(firstRulePath, sourceBody)
       const conditions = mergeGroupRule[firstRulePath]
 
       // 如果条件中含有或(||)分支条件

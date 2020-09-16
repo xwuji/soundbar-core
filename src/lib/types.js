@@ -170,7 +170,7 @@ export function isUndefined (o) {
   return getType(o) === '[object Undefined]'
 }
 export function isEmptyObj (o) {
-  if (!this.isObject(o)) throw new Error('Not an Object')
+  if (!isObject(o)) throw new Error('Not an Object')
   polyFillObjectKeys()
   return Object.keys(o).length === 0
 }

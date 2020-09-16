@@ -11,8 +11,7 @@ export function handleSourceKeyValueByRules (sourcekeyValue, rules) {
     REG_BETWEEN,
     REG_EQUAL_TYPE,
     REG_NOTEQUAL_TYPE,
-    REG_EXP,
-    REG_DEL
+    REG_EXP
   } = OPR_REG_MATCH
   const ruleKeys = Object.keys(rules)
   const rulekeysLen = ruleKeys.length
@@ -21,40 +20,28 @@ export function handleSourceKeyValueByRules (sourcekeyValue, rules) {
   for (let i = 0; i < rulekeysLen; i++) {
     let ruleKey = ruleKeys[i] // 匹配的规则key
     let ruleValue = rules[ruleKey] // 匹配的规则条件
-    if (ruleKey.match(REG_DEL)) {
-      const deleteKeys = ruleKey.replace(REG_DEL, '')
-      if (isObject(sourcekeyValue) && sourcekeyValue.hasOwnProperty(deleteKeys)) delete sourcekeyValue[deleteKeys]
-    } else if (ruleKey.match(REG_LT)) {
-      isSourceMatchRule = isSourceMatchRule && compareResult(sourcekeyValue, ruleKey.replace(REG_LT, ''), ruleValue, 'lt')
+    // 删除delkey，因此处写法和逻辑有问题
+    if (ruleKey.match(REG_LT)) {
+      isSourceMatchRule = isSourceMatchRule && handelMultiCondits(sourcekeyValue, ruleKey.replace(REG_LT, ''), ruleValue, 'lt')
     } else if (ruleKey.match(REG_GT)) {
-      isSourceMatchRule = isSourceMatchRule && compareResult(sourcekeyValue, ruleKey.replace(REG_GT, ''), ruleValue, 'gt')
+      isSourceMatchRule = isSourceMatchRule && handelMultiCondits(sourcekeyValue, ruleKey.replace(REG_GT, ''), ruleValue, 'gt')
     } else if (ruleKey.match(REG_LTE)) {
-      isSourceMatchRule = isSourceMatchRule && compareResult(sourcekeyValue, ruleKey.replace(REG_LTE, ''), ruleValue, 'lte')
+      isSourceMatchRule = isSourceMatchRule && handelMultiCondits(sourcekeyValue, ruleKey.replace(REG_LTE, ''), ruleValue, 'lte')
     } else if (ruleKey.match(REG_GTE)) {
-      isSourceMatchRule = isSourceMatchRule && compareResult(sourcekeyValue, ruleKey.replace(REG_GTE, ''), ruleValue, 'gte')
+      isSourceMatchRule = isSourceMatchRule && handelMultiCondits(sourcekeyValue, ruleKey.replace(REG_GTE, ''), ruleValue, 'gte')
     } else if (ruleKey.match(REG_NOTEQUAL)) {
-      isSourceMatchRule = isSourceMatchRule && compareResult(sourcekeyValue, ruleKey.replace(REG_NOTEQUAL, ''), ruleValue, 'notEqual')
+      isSourceMatchRule = isSourceMatchRule && handelMultiCondits(sourcekeyValue, ruleKey.replace(REG_NOTEQUAL, ''), ruleValue, 'notEqual')
     } else if (ruleKey.match(REG_BETWEEN)) {
-      isSourceMatchRule = isSourceMatchRule && compareResult(sourcekeyValue, ruleKey.replace(REG_BETWEEN, ''), ruleValue, 'bt')
+      isSourceMatchRule = isSourceMatchRule && handelMultiCondits(sourcekeyValue, ruleKey.replace(REG_BETWEEN, ''), ruleValue, 'bt')
     } else if (ruleKey.match(REG_EXP)) {
-      isSourceMatchRule = isSourceMatchRule && compareResult(sourcekeyValue, ruleKey.replace(REG_EXP, ''), ruleValue, 'reg')
+      isSourceMatchRule = isSourceMatchRule && handelMultiCondits(sourcekeyValue, ruleKey.replace(REG_EXP, ''), ruleValue, 'reg')
     } else if (ruleKey.match(REG_EQUAL_TYPE)) {
-      isSourceMatchRule = isSourceMatchRule && compareResult(sourcekeyValue, ruleKey.replace(REG_EQUAL_TYPE, ''), ruleValue, 'etype')
+      isSourceMatchRule = isSourceMatchRule && handelMultiCondits(sourcekeyValue, ruleKey.replace(REG_EQUAL_TYPE, ''), ruleValue, 'etype')
     } else if (ruleKey.match(REG_NOTEQUAL_TYPE)) {
-      isSourceMatchRule = isSourceMatchRule && compareResult(sourcekeyValue, ruleKey.replace(REG_NOTEQUAL_TYPE, ''), ruleValue, 'netype')
+      isSourceMatchRule = isSourceMatchRule && handelMultiCondits(sourcekeyValue, ruleKey.replace(REG_NOTEQUAL_TYPE, ''), ruleValue, 'netype')
     } else if (!ruleKey.match(/^\$/g) || ruleKey.match(REG_EQUAL)) {
       // 当匹配$=符号或者没有符号，规则条件是数组则数组内的值任意满足源字段的值即可
-      const bareKey = ruleKey.match(REG_EQUAL) ? ruleKey.replace(REG_EQUAL, '') : ruleKey
-      if (isArray(ruleValue)) {
-        // 多种类型值得对比，数组中有对比符合的子项即返回成功
-        let itemMatch = false
-        ruleValue.map((conditItem) => {
-          itemMatch = itemMatch || compareResult(sourcekeyValue, bareKey, conditItem)
-        })
-        isSourceMatchRule = isSourceMatchRule && itemMatch
-      } else {
-        isSourceMatchRule = isSourceMatchRule && compareResult(sourcekeyValue, bareKey, ruleValue)
-      }
+      isSourceMatchRule = isSourceMatchRule && handelMultiCondits(sourcekeyValue, ruleKey.match(REG_EQUAL) ? ruleKey.replace(REG_EQUAL, '') : ruleKey, ruleValue)
     }
   }
   return {
@@ -79,6 +66,19 @@ export function fetchOutKeyChild (arrGroup, key) {
   return resGroup // [mutilRes: true,[],[]]
 }
 
+// 处理规则值是数组情况（数组内的值是或关系，多值匹配一个条件，满足即可）
+// 多种类型值得对比，数组中有对比符合的子项即返回成功
+function handelMultiCondits (sourcekeyValue, bareKey, ruleValue, mSymbol) {
+  if (isArray(ruleValue)) {
+    let itemMatch = false
+    ruleValue.map((conditItem) => {
+      itemMatch = itemMatch || compareResult(sourcekeyValue, bareKey, conditItem, mSymbol)
+    })
+    return itemMatch
+  } else {
+    return compareResult(sourcekeyValue, bareKey, ruleValue, mSymbol)
+  }
+}
 /**
   * 返回源数据和条件逐条比较的结果
   * @param {array | object} sourcekeyValue 路径匹配到的原数据集合
@@ -94,13 +94,15 @@ function compareResult (sourcekeyValue, bareKey, ruleValue, mSymbol) {
   const valTypeIsStr = typeof sourcePosValue === 'string'
   const valTypeIsNum = typeof sourcePosValue === 'number'
   const compareType = mSymbol === 'netype' || mSymbol === 'etype'
-  // 支持数组的长度、数值和字符串值的对比，新增类型对比，不支持复杂类型值的深比较
-  if (sourceValTypeIsArr || valTypeIsStr || valTypeIsNum) {
-    // !compareType && ... 类型的比较不适用下面的抛错 因为对比类型的value一定是字符串 不符合数组一定是长度比较的要求
+  if (compareType) {
+    // 类型校验
     // compareType ? ruleValue.toLowerCase() ... 规则类型字符串转换成小写统一
+    return dispatchSymbolCompare(sourcePosValue, ruleValue.toLowerCase(), mSymbol)
+  } else if (sourceValTypeIsArr || valTypeIsStr || valTypeIsNum) {
+    // 支持数组的长度、数值和字符串值的对比，新增类型对比，不支持复杂类型值的深比较
+    if (sourceValTypeIsArr && typeof ruleValue !== 'number') throw Error('Source Value Type Is Array, Match length ,Rule Condition Must Be Number')
     // sourceValTypeIsArr ? sourcePosValue.length : sourcePosValue 数组类型用长度，数字字符串用值
-    if (!compareType && sourceValTypeIsArr && typeof ruleValue !== 'number') throw Error('Source Value Type Is Array, Match length ,Rule Condition Must Be Number')
-    return dispatchSymbolCompare(sourceValTypeIsArr ? sourcePosValue.length : sourcePosValue, compareType ? ruleValue.toLowerCase() : ruleValue, mSymbol)
+    return dispatchSymbolCompare(sourceValTypeIsArr ? sourcePosValue.length : sourcePosValue, ruleValue, mSymbol)
   } else {
     return false
   }

@@ -6,6 +6,11 @@ module.exports = {
     'functionId': 'discoveryFanAreaList',
     'clientVersion': '10.0.0'
   },
+  'exactRule': {
+    '$.result': ['unionId', 'pin'],
+    '$.result.list': ['exactData', 'authorArticleNumStr'],
+    '$.result.config': ['bg']
+  },
   // 'filterWithoutMerge': true,
   'mergeRule': {
     // 满足条件的合并到自定义字段中
@@ -35,8 +40,9 @@ module.exports = {
       // 复杂类型建议使用反向过滤规则
       // 目前条件过滤只针对于数组，对象类型非条件筛选，也就是说对象中字段要么保留要么删除，不存在满足条件才处理
       // 条件筛选，满足Key,Value相互匹配，筛选子项，正向筛选或者反向筛选
-      'floorAppearance': ['articleDetailFloor_1', 'similarArticleFloor_2'] // 保留数组中有floorApearrence且值不为similarArticleFloor_2的子项，没有此字段也属于不等于
-      // 'floorApearrence': ['similarArticleFloor_2','similarArticleFloor_3'] // 保留数组中floorApearrence值为similarArticleFloor_2或者similarArticleFloor_3的子项
+      '$@typeFlag': ['object', 'array', 'boolean'] // 过滤list下面子元素，条件为其字段typeFlag类型是'object', 'array','boolean'的
+      // 'floorAppearance': ['articleDetailFloor_1', 'similarArticleFloor_2'] // 过滤list下面子元素，条件为其字段floorApearrence值为articleDetailFloor_1或similarArticleFloor_2
+      // 'floorApearrence': ['similarArticleFloor_2','similarArticleFloor_3'] // 过滤list下面子元素，，条件为其字段floorApearrence值为similarArticleFloor_2或者similarArticleFloor_3
     },
     // **** config 是对象类型，其后条件对自身进行筛选 ****
     '$.result.config': {
