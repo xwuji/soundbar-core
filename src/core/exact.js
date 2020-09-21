@@ -1,4 +1,5 @@
 import { isArray, isObject, isEmptyObj } from '@lib/types.js'
+import _ from 'lodash/object'
 
 export default class GrabExactCore {
   constructor (queryGrapExactRules, sourceBody) {
@@ -19,6 +20,15 @@ export default class GrabExactCore {
     })
     // rulePathesArr => ['$.result','$.result.list','$.result.config']
     const rulePathesArrLen = rulePathesArr.length
+
+    var _LIST_1 = _.get(cpSouceBody, 'result.list', [])
+    var NEW_ARR = []
+    for (let i = 0; i < _LIST_1.length; i++) {
+      const _LIST_OBJ = _.pick(_LIST_1[i], ['typeFlag', 'typeDes', 'exactData'], [])
+      NEW_ARR.push(_LIST_OBJ)
+    }
+    console.log('NEW_ARR', NEW_ARR)
+
     // 遍历每个路径进行处理
     for (let x = 0; x < rulePathesArrLen; x++) {
       const grapExactPath = rulePathesArr[x] // "$.result.list"
@@ -39,22 +49,22 @@ export default class GrabExactCore {
 
         if (y === rulePathSplitArrLen - 1) {
           console.log(grapExactPath, '============data===========', originTempObj)
-          if (isArray(originTempObj)) {
-            // 对其子元素对象下字段提取
-            originTempObj.map((childObj) => {
-              if (!isObject(childObj)) return
-              let arrPathTempObj = {}
-              grapfieldArr.map((field) => {
-                arrPathTempObj = Object.assign({}, { [field]: childObj[field] })
-              })
-              arrPathTempObj = 
-            })
-          } else if (isObject(originTempObj)) {
-            // 对其下字段提取
-            grapfieldArr.map((field) => {
-              pathTempObj = Object.assign({}, { [field]: originTempObj[field] })
-            })
-          }
+          // if (isArray(originTempObj)) {
+          //   // 对其子元素对象下字段提取
+          //   originTempObj.map((childObj) => {
+          //     if (!isObject(childObj)) return
+          //     let arrPathTempObj = {}
+          //     grapfieldArr.map((field) => {
+          //       arrPathTempObj = Object.assign({}, { [field]: childObj[field] })
+          //     })
+          //     arrPathTempObj =
+          //   })
+          // } else if (isObject(originTempObj)) {
+          //   // 对其下字段提取
+          //   grapfieldArr.map((field) => {
+          //     pathTempObj = Object.assign({}, { [field]: originTempObj[field] })
+          //   })
+          // }
         }
         this.grapExactRes = Object.assign({}, this.grapExactRes, pathTempObj)
       }

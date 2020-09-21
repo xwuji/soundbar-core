@@ -1,5 +1,5 @@
 import { isArray, isObject, isEmptyObj } from '@lib/types.js'
-import { handleSourceKeyValueByRules } from '@lib/functions.js'
+import { handleSourceKeyValueByRules } from '@lib/coreFns.js'
 
 export default class FilterCore {
   constructor (queryFilterRules, sourceBody) {

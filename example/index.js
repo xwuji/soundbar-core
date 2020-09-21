@@ -13,4 +13,4 @@ const sourceDB = require('./db/source.js')
 
 const grabExactCore = new GrabExactCore(exactRule, sourceDB)
 const grabExactGroupData = grabExactCore.getExactGroup
-console.log(JSON.stringify(grabExactGroupData))
+// console.log(JSON.stringify(grabExactGroupData))

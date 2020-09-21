@@ -1,5 +1,5 @@
 import { isArray, isObject, isEmptyObj } from '@lib/types.js'
-import { fetchOutKeyChild, handleSourceKeyValueByRules } from '@lib/functions.js'
+import { fetchOutKeyChild, handleSourceKeyValueByRules } from '@lib/coreFns.js'
 import { OPR_REG_MATCH } from '@config'
 export default class MergeCore {
   constructor (queryMergeRules, sourceBody) {
