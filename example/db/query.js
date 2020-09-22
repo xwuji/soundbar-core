@@ -6,10 +6,10 @@ module.exports = {
     'functionId': 'discoveryFanAreaList',
     'clientVersion': '10.0.0'
   },
-  'exactRule': {
-    '$.result': ['unionId', 'pin'],
-    '$.result.list': ['exactData', 'authorArticleNumStr'],
-    '$.result.config': ['bg']
+  'exactGrabRule': {
+    '$.result': ['pageView', 'pin'],
+    '$.result.list': ['typeDes', 'typeFlag', 'exactData', 'floorAppearance'], // 后期针对数组增加分段查询模拟分页 { pageNum:1, pageSize: 20}
+    '$.result.config.head': ['shareInfo']
   },
   // 'filterWithoutMerge': true,
   'mergeRule': {
@@ -31,7 +31,7 @@ module.exports = {
   // 过滤规则
   // 过滤规则内不支持【$|'或'】规则，因为没有必要且不符合认知
   // 过滤规则支持数组内子项过滤，但不支持数组内子项的子项过滤 $.a.b.c 即c才能是数组,其他需求配合merge使用
-  'filterRule': {
+  'shakingRule': {
     // 按照源字段顺序进行过滤
     // 键值对的布尔值true或者false表示该字段是否保留
     // 如果要和原数据的布尔值进行比较，对整个子项进行筛选，使用字符串形式的'true'或者'false'

@@ -1,7 +1,7 @@
 import { isArray, isObject, isEmptyObj } from '@lib/types.js'
 import { handleSourceKeyValueByRules } from '@lib/coreFns.js'
 
-export default class FilterCore {
+export default class ShakingCore {
   constructor (queryFilterRules, sourceBody) {
     this.queryFilterRules = queryFilterRules
     this.sourceBody = sourceBody

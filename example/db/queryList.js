@@ -9,7 +9,7 @@ module.exports = [{
   'filterWithoutMerge': true,
   'mergeRule': {
   },
-  'filterRule': {
+  'shakingRule': {
   }
 }, {
   'queryKey': 'discoveryGuessLike',
@@ -22,7 +22,7 @@ module.exports = [{
   'filterWithoutMerge': false,
   'mergeRule': {
   },
-  'filterRule': {
+  'shakingRule': {
   }
 }, {
   'queryKey': 'discoveryAuthorHome',
@@ -35,6 +35,6 @@ module.exports = [{
   'filterWithoutMerge': false,
   'mergeRule': {
   },
-  'filterRule': {
+  'shakingRule': {
   }
 }]

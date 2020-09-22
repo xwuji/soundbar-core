@@ -351,7 +351,6 @@ module.exports = {
       'title': '看就去未激活情况网关的卡仕达 ，爱斯达克经安徽省框架的',
       'videoFlag': 0
     }, {
-      'typeDes': 'undefined',
       'floorAppearance': 'similarArticleFloor_9',
       'orderNum': 12,
       'subPosition': 156,

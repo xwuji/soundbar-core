@@ -1,78 +1,72 @@
+/**
+ * 按照路径精确提取字段
+ * [dotPath]{String}:[field1,field2,...fieldn]{Array}
+ * dotPath: 点符路径
+ */
+
 import { isArray, isObject, isEmptyObj } from '@lib/types.js'
 import _ from 'lodash/object'
 
-export default class GrabExactCore {
-  constructor (queryGrapExactRules, sourceBody) {
-    this.grapExactRes = {}
-    this.queryGrapExactRules = queryGrapExactRules
+export default class ExactGrabCore {
+  constructor (queryExactGrapRules, sourceBody) {
+    this.exactGrabRes = {}
+    this.queryExactGrapRules = queryExactGrapRules
     this.sourceBody = sourceBody
   }
   get getExactGroup () {
-    const { queryGrapExactRules, sourceBody } = this
+    const { queryExactGrapRules, sourceBody } = this
     if (!sourceBody) return
-    if (!queryGrapExactRules || isEmptyObj(queryGrapExactRules)) return sourceBody
-    let cpSouceBody = { ...sourceBody }
+    if (!queryExactGrapRules || isEmptyObj(queryExactGrapRules)) return sourceBody
+    let currSourceBody = { ...sourceBody }
     // 取所有规则的路径
-    let rulePathesArr = Object.keys(queryGrapExactRules)
+    let rulePathesArr = Object.keys(queryExactGrapRules)
     // 排序，越短层级越高，层级高的先处理
     rulePathesArr.sort((m, n) => {
       return m.length - n.length
     })
     // rulePathesArr => ['$.result','$.result.list','$.result.config']
     const rulePathesArrLen = rulePathesArr.length
-
-    var _LIST_1 = _.get(cpSouceBody, 'result.list', [])
-    var NEW_ARR = []
-    for (let i = 0; i < _LIST_1.length; i++) {
-      const _LIST_OBJ = _.pick(_LIST_1[i], ['typeFlag', 'typeDes', 'exactData'], [])
-      NEW_ARR.push(_LIST_OBJ)
-    }
-    console.log('NEW_ARR', NEW_ARR)
-
     // 遍历每个路径进行处理
     for (let x = 0; x < rulePathesArrLen; x++) {
-      const grapExactPath = rulePathesArr[x] // "$.result.list"
-      const grapfieldArr = queryGrapExactRules[grapExactPath] // 匹配的路径下对应的选取方案
-      const rulePathSplitArr = grapExactPath.split('.').splice(1)//  匹配的路径拆分 ['result','list']
-      const rulePathSplitArrLen = rulePathSplitArr.length
-      // let currSourceBody = { ...sourceBody }
-      let originTempObj = {}
-      let pathTempObj = {}
-      for (let y = 0; y < rulePathSplitArrLen; y++) {
-        // const currSourceValue = currSourceBody[rulePathSplitArr[y]]
-        // tempObj[rulePathSplitArr[y]] = {}
-        // if (y === rulePathSplitArrLen - 1) {
-        //   tempObj[rulePathSplitArr[y]] = ''
-        // }
-        // this.grapExactRes = Object.assign({}, this.grapExactRes)
-        originTempObj = Object.assign({}, originTempObj[rulePathSplitArr[y]])
-
-        if (y === rulePathSplitArrLen - 1) {
-          console.log(grapExactPath, '============data===========', originTempObj)
-          // if (isArray(originTempObj)) {
-          //   // 对其子元素对象下字段提取
-          //   originTempObj.map((childObj) => {
-          //     if (!isObject(childObj)) return
-          //     let arrPathTempObj = {}
-          //     grapfieldArr.map((field) => {
-          //       arrPathTempObj = Object.assign({}, { [field]: childObj[field] })
-          //     })
-          //     arrPathTempObj =
-          //   })
-          // } else if (isObject(originTempObj)) {
-          //   // 对其下字段提取
-          //   grapfieldArr.map((field) => {
-          //     pathTempObj = Object.assign({}, { [field]: originTempObj[field] })
-          //   })
-          // }
-        }
-        this.grapExactRes = Object.assign({}, this.grapExactRes, pathTempObj)
+      let pathFieldValue
+      const grapExactPathWithprefix = rulePathesArr[x] // "$.result.list"
+      const grapExactPath = grapExactPathWithprefix && grapExactPathWithprefix.replace(/^\$./g, '') // "result.list"
+      const grapWhichfieldsArr = queryExactGrapRules[grapExactPathWithprefix] // 该路径下要选取的字段数组
+      const sourcePosFieldValue = this.getOneFieldByPath(currSourceBody, grapExactPath)
+      // 基于规则 exactGrap path的【末端】字段只有以下几种可能：数组，对象字面量或取不到该字段
+      if (isArray(sourcePosFieldValue)) {
+        pathFieldValue = this.grabFieldsFromArray(sourcePosFieldValue, grapWhichfieldsArr)
+      } else if (isObject(sourcePosFieldValue)) {
+        pathFieldValue = this.grabFieldsFromObject(sourcePosFieldValue, grapWhichfieldsArr)
       }
+      pathFieldValue && this.setOneFieldByPath(grapExactPath, pathFieldValue)
     }
-    return {
-      // queryGrapExactRules: this.queryGrapExactRules,
-      // sourceBody: this.sourceBody
-      grapExactRes: this.grapExactRes
+    return this.exactGrabRes
+  }
+  setOneFieldByPath (path, value) {
+    if (!path || !value) throw Error('setOneFieldByPath path|value Is Not Exist')
+    return _.set(this.exactGrabRes, path, value)
+  }
+  getOneFieldByPath (getObject = {}, path = '') {
+    if (!isObject(getObject)) throw Error('getObject Must Be Object')
+    return _.get(getObject, path)
+  }
+  grabFieldsFromObject (grabObject = {}, fields = []) {
+    if (!isObject(grabObject)) throw Error('grabObject Must Be Object')
+    if (!isArray(fields)) throw Error('fields Must Be Array')
+    return _.pick(grabObject, fields)
+  }
+  grabFieldsFromArray (grabArr = [], fields = []) {
+    if (!isArray(grabArr) || !isArray(fields)) throw Error('grabFieldsFromArray Every Agru Must Be Array')
+    let resArr = []
+    try {
+      for (let i = 0; i < grabArr.length; i++) {
+        const GRAB_OBJ = _.pick(grabArr[i], fields)
+        !isEmptyObj(GRAB_OBJ) && resArr.push(GRAB_OBJ)
+      }
+    } catch (err) {
+      return grabArr
     }
+    return resArr
   }
 }
