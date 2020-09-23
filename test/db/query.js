@@ -37,20 +37,21 @@ module.exports = {
     // 如果要和原数据的布尔值进行比较，对整个子项进行筛选，使用字符串形式的'true'或者'false'
     // **** list是数组类型，其后条件是针对子项进项筛选 ****
     '$.result.list': {
-      // 复杂类型建议使用反向过滤规则
-      // 目前条件过滤只针对于数组，对象类型非条件筛选，也就是说对象中字段要么保留要么删除，不存在满足条件才处理
-      // 条件筛选，满足Key,Value相互匹配，筛选子项，正向筛选或者反向筛选
-      '$@typeFlag': ['object', 'array', 'boolean'] // 过滤list下面子元素，条件为其字段typeFlag类型是'object', 'array','boolean'的
-      // 'floorAppearance': ['articleDetailFloor_1', 'similarArticleFloor_2'] // 过滤list下面子元素，条件为其字段floorApearrence值为articleDetailFloor_1或similarArticleFloor_2
-      // 'floorApearrence': ['similarArticleFloor_2','similarArticleFloor_3'] // 过滤list下面子元素，，条件为其字段floorApearrence值为similarArticleFloor_2或者similarArticleFloor_3
+      '$$floorAppearance': ['authorDetailFloor', 'g']
+      // '$<>orderNum': [3, 7]
     },
+    // '$.result.list': {
+    //   // 复杂类型建议使用反向过滤规则
+    //   // 目前条件过滤只针对于数组，对象类型非条件筛选，也就是说对象中字段要么保留要么删除，不存在满足条件才处理
+    //   // 条件筛选，满足Key,Value相互匹配，筛选子项，正向筛选或者反向筛选
+    //   '$@typeFlag': ['object', 'array', 'boolean'] // 过滤list下面子元素，条件为其字段typeFlag类型是'object', 'array','boolean'的
+    //   // 'floorAppearance': ['articleDetailFloor_1', 'similarArticleFloor_2'] // 过滤list下面子元素，条件为其字段floorApearrence值为articleDetailFloor_1或similarArticleFloor_2
+    //   // 'floorApearrence': ['similarArticleFloor_2','similarArticleFloor_3'] // 过滤list下面子元素，，条件为其字段floorApearrence值为similarArticleFloor_2或者similarArticleFloor_3
+    // },
     // **** config 是对象类型，其后条件对自身进行筛选 ****
-    '$.result.config': {
-      '$^': ['head'] // 删除config中footer字段数据,无论其值是什么
-    },
     // '$.result.config.footer': false
     '$.result': {
-      '$^': ['pageView', 'pageViewStr']
+      '$^': ['pageView', 'pageViewStr', 'config']
     }
   }
 }

@@ -32,7 +32,7 @@ export function handleSourceKeyValueByRules (sourcekeyValue, rules) {
     } else if (ruleKey.match(REG_NOTEQUAL)) {
       isSourceMatchRule = isSourceMatchRule && handelMultiCondits(sourcekeyValue, ruleKey.replace(REG_NOTEQUAL, ''), ruleValue, 'notEqual')
     } else if (ruleKey.match(REG_BETWEEN)) {
-      isSourceMatchRule = isSourceMatchRule && handelMultiCondits(sourcekeyValue, ruleKey.replace(REG_BETWEEN, ''), ruleValue, 'bt')
+      isSourceMatchRule = isSourceMatchRule && handelMultiCondits(sourcekeyValue, ruleKey.replace(REG_BETWEEN, ''), ruleValue, 'btw')
     } else if (ruleKey.match(REG_EXP)) {
       isSourceMatchRule = isSourceMatchRule && handelMultiCondits(sourcekeyValue, ruleKey.replace(REG_EXP, ''), ruleValue, 'reg')
     } else if (ruleKey.match(REG_EQUAL_TYPE)) {
@@ -69,7 +69,7 @@ export function fetchOutKeyChild (arrGroup, key) {
 // 处理规则值是数组情况（数组内的值是或关系，多值匹配一个条件，满足即可）
 // 多种类型值得对比，数组中有对比符合的子项即返回成功
 function handelMultiCondits (sourcekeyValue, bareKey, ruleValue, mSymbol) {
-  if (isArray(ruleValue)) {
+  if (isArray(ruleValue) && mSymbol !== 'btw' && mSymbol !== 'reg') {
     let itemMatch = false
     ruleValue.map((conditItem) => {
       itemMatch = itemMatch || compareResult(sourcekeyValue, bareKey, conditItem, mSymbol)
@@ -147,7 +147,7 @@ function dispatchSymbolCompare (x, y, mSymbol) {
         else return +x >= +y
       case 'notEqual':
         return x !== y
-      case 'bt': // y = [from,end]
+      case 'btw': // y = [from,end]
         if (Object.is(+x, NaN) || Object.is(+y[0], NaN) || Object.is(+y[1], NaN)) return false
         else return x > y[0] && x < y[1]
       case 'reg':
