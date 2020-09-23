@@ -56,9 +56,6 @@ console.log(JSON.stringify(shakingGroupData))
 ```
 
 
-
-
-
 ## 规则操作符
 
 
@@ -499,9 +496,53 @@ shaking规则分为**条件过滤**和**非条件过滤**
 }
 ```
 
+### grabExactRule [object]
+精确提取字段规则，通过路径选取对象，然后对对象进行字段提取。如果该对象是数组则对该数组子元素对象进行字段提取，如果是对象字面量则直接进行提取。**提取后的json结构和原数据保持一致**，按照原先的取字段方式进行操作即可。  
+```json
+"exactGrabRule": {
+  [dotPath]: [fields]
+}
+```
+#### dotPath [string]
+点附路径 `$.a.b.c`
+#### fields [array]
+提取的字段名称集合 `[field1,field2,...fieldn]`
 
+举个例子
+```json
+"exactGrabRule": {
+    "$.result": ["pageView", "pin"],
+    "$.result.list": ["typeDes", "typeFlag", "exactData", "floorAppearance"], 
+    "$.result.config.head": ["shareInfo"]
+  },
+```
+上面的例子会提取原数据中`result`中的`pageView`和`pin`字段,`result.config.head中`的`shareInfo`字段,`result.list`是个数组，所以会进行一层遍历，提取其每个子元素的`shareInfo`字段，没有则忽略。
 
-
+以下为返回结果，json所有保留的字段结构和原数据一致。其他所有冗余字段全部被过滤掉了。
+```json
+{
+  "result": {
+    "pageView": 322,
+    "pin": "J/Y/d9LNZtlCvXGBvbhdMg==",
+    "list": [{
+      "typeDes": "object",
+      "typeFlag": {},
+      "exactData": "奥斯卡很大猴神大叔的",
+      "floorAppearance": "style_1"
+    }, {
+      "typeDes": "array",
+      "typeFlag": [],
+      "exactData": "快乐哈第三方好地方",
+      "floorAppearance": "style_2"
+    }],
+    "config": {
+      "head": {
+        "shareInfo": {}
+      }
+    }
+  }
+}
+```
 
 **完整单接口请求入参示例：**
 

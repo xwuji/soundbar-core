@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "npm run clean && rollup -c rollup.config.js",
-    "test": "npm run build && rm output.json && node example/index.js > output.json",
+    "test": "sh ./test/run.sh",
     "clean": "rm -rf dist"
   },
   "keywords": [

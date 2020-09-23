@@ -5,7 +5,7 @@
  */
 
 import { isArray, isObject, isEmptyObj } from '@lib/types.js'
-import _ from 'lodash/object'
+import { pick, get, set } from 'lodash/object'
 
 export default class ExactGrabCore {
   constructor (queryExactGrapRules, sourceBody) {
@@ -45,23 +45,23 @@ export default class ExactGrabCore {
   }
   setOneFieldByPath (path, value) {
     if (!path || !value) throw Error('setOneFieldByPath path|value Is Not Exist')
-    return _.set(this.exactGrabRes, path, value)
+    return set(this.exactGrabRes, path, value)
   }
   getOneFieldByPath (getObject = {}, path = '') {
     if (!isObject(getObject)) throw Error('getObject Must Be Object')
-    return _.get(getObject, path)
+    return get(getObject, path)
   }
   grabFieldsFromObject (grabObject = {}, fields = []) {
     if (!isObject(grabObject)) throw Error('grabObject Must Be Object')
     if (!isArray(fields)) throw Error('fields Must Be Array')
-    return _.pick(grabObject, fields)
+    return pick(grabObject, fields)
   }
   grabFieldsFromArray (grabArr = [], fields = []) {
     if (!isArray(grabArr) || !isArray(fields)) throw Error('grabFieldsFromArray Every Agru Must Be Array')
     let resArr = []
     try {
       for (let i = 0; i < grabArr.length; i++) {
-        const GRAB_OBJ = _.pick(grabArr[i], fields)
+        const GRAB_OBJ = pick(grabArr[i], fields)
         !isEmptyObj(GRAB_OBJ) && resArr.push(GRAB_OBJ)
       }
     } catch (err) {
