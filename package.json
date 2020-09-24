@@ -1,6 +1,6 @@
 {
   "name": "@jd/soundbar-core",
-  "version": "0.1",
+  "version": "0.1.0",
   "description": "回音壁核心解析器",
   "main": "dist/index.js",
   "scripts": {
