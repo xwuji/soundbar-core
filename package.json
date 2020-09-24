@@ -1,7 +1,7 @@
 {
   "name": "@jd/soundbar-core",
-  "version": "0.0.2",
-  "description": "回音壁解释器",
+  "version": "0.1",
+  "description": "回音壁核心解析器",
   "main": "dist/index.js",
   "scripts": {
     "build": "npm run clean && rollup -c rollup.config.js",

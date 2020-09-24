@@ -1,7 +1,7 @@
-node_modules
-mock
-src
+TEMP_runtest_printout/
+src/
+test/
 *.config.js
 .gitignore
-output.js
-test
+node_modules
+mock

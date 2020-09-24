@@ -1,3 +1,3 @@
-node_modules
-dist
-output.json
+node_modules/
+dist/
+TEMP_runtest_printout/
