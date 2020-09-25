@@ -30,6 +30,7 @@
     "webpack-cli": "^3.3.11"
   },
   "dependencies": {
+    "@jd/soundbar-core": "^0.1.0",
     "lodash": "^4.17.20"
   }
 }

@@ -19,7 +19,10 @@ for file in $(ls $__DIR__/test/entrys)
   done
 }
 
-
+if [ -f "${__DIR__}/soundbar.config.js" ]
+then
+ cat "${__DIR__}/soundbar.config.js"
+fi
 echo "====== Starting shell script ======"
 # startTimes=`date +%s`
 if [[ -d "./${publishDir}" && -f "./${publishDir}/${publishFile}" ]]
