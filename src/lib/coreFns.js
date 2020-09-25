@@ -89,7 +89,7 @@ function handelMultiCondits (sourcekeyValue, bareKey, ruleValue, mSymbol) {
   */
 function compareResult (sourcekeyValue, bareKey, ruleValue, mSymbol) {
   const sourcePosValue = sourcekeyValue[bareKey]
-  if (!sourcePosValue) return false
+  if (+sourcePosValue !== 0 && !sourcePosValue) return false
   const sourceValTypeIsArr = isArray(sourcePosValue)
   const valTypeIsStr = typeof sourcePosValue === 'string'
   const valTypeIsNum = typeof sourcePosValue === 'number'

@@ -1,6 +1,6 @@
 {
   "name": "@jd/soundbar-core",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "回音壁核心解析器",
   "main": "dist/index.js",
   "scripts": {
@@ -30,7 +30,7 @@
     "webpack-cli": "^3.3.11"
   },
   "dependencies": {
-    "@jd/soundbar-core": "^0.1.0",
+    "@jd/soundbar-core": "^0.1.1",
     "lodash": "^4.17.20"
   }
 }

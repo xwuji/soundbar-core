@@ -57,6 +57,8 @@
 // }
 module.exports = {
   'shakingRule': {
-    '$.result.trumpList': { '$>=id': 6123 }
+    '$.result.trumpList': { '$>=id': 6123 },
+    '$.result.bottomTabs': { '$>=tabType': 0 },
+    '$.result.bottomTabsNew': { '$>=id': 2 }
   }
 }
