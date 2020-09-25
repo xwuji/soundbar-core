@@ -32,13 +32,11 @@ export default class ShakingCore {
         if (isArray(operatorData) && (i === rulePathSplitArrLen - 1)) {
           // 源数据节点是数组类型且是末点元素
           const remainDataArray = this.filterMatchedData(operatorData, conditions)
-          if (remainDataArray.length > 0) {
-            // 寻址操作 用操作变量改变源数据
-            operatorData.length = 0
-            remainDataArray.map((matched) => {
-              operatorData.push(matched)
-            })
-          }
+          operatorData.length = 0
+          // 寻址操作 用操作变量改变源数据
+          remainDataArray.map((matched) => {
+            operatorData.push(matched)
+          })
         } else if (conditions['$^'] && isObject(operatorData)) { // 有删除符号且被删除的源是对象
           conditions['$^'].map((filterKey) => {
             if (operatorData.hasOwnProperty(filterKey)) {
