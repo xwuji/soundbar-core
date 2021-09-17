@@ -7,22 +7,24 @@
 
 
 
-## 安装和使用
-
-#### npm  | yarn
+#### 安装
 
 ```shell
 npm install @soundbar/core --save
+```
+```shell
 yarn add @soundbar/core
 ```
 
-#### step2	引入解释器功能类
+#### 使用
+
+##### 引入解释器功能类
 
 ```js
 const { shakingCore, mergeCore } = require("@soundbar/core")
 ```
 
-#### step3	实例化并入参
+##### 实例化并入参
 
 ```js
 //@Param {mergeRule}  Object 用户请求参数中的mergeRule
@@ -32,7 +34,7 @@ const mergeCore = new mergeCore(mergeRule, sourceDB)
 const shakingCore = new shakingCore(shakingRule, sourceDB)
 ```
 
-#### step4	获取处理的数据
+##### 获取处理的数据
 
 ```js
 const mergeGroupData = mergeCore.getmergeGroup
