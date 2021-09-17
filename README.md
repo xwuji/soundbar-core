@@ -1,25 +1,25 @@
-## 关于
+<img src="https://aszero.oss-cn-shanghai.aliyuncs.com/imgs/soundbar-logo.png" style="width: 500px;" />
+
 
 在 `REST` 中，资源的返回结构与返回数量是由服务端决定；在`GraphQL`，服务端只负责定义哪些资源是可用的，由客户端自己决定需要得到什么资源,所谓的api查询。我们的想法是在`GraphQL`中服务端决定的资源，其实也是通过客户端所给予的信息来进行反馈（资源定位和http的动作），如果客户端和服务端之间有一套约定，这个约定框架下客户端给的信息足够多，那么也可以让服务端来满足客户端的查询需求，即按需请求和按需返回，这个和`GraphQL`的思想是一致的。 至于为什么不统一使用`GraphQL`，每个公司的大背景下会有每种不同的实际情况，满足多端的需求又尽快的让服务端和客户端每个人都熟悉`GraphQL`，成本比较大；当然在有条件的额情况下统一使用GraphQL是最好的。所以我们就想用中间层和传统的`REST`来改造现有数据接口，又符合`GraphQL`的思想，在客户端的查询条件下，满足合并模块数据、过滤筛选冗余数据，选取特定数据的需求。
 
 **举个栗子**：前端A想到从后端B那边获取想要的数据，通常会问B要对应的接口服务以及接口文档（出入参和边界情况），如果这个时候A发现B给到的数据中包含需要的数据但是并不能立马可以使用，需要层层解析甚至还需要经过复杂的非业务逻辑运算，不巧的是参与的前端**A1,A2,A3...An**也在使用这个接口，产生的问题是一样的，于是A会去找B协调接口的简化，但是这时候B的该技术评审已定，框架已经定型，排期已过，甚至一句‘不好做哎’ 就可以把A友善的拒绝，那么**A1,A2...An**就商量不要重复造车轮，逻辑和解析运算大家写一个公共组件或者方法，但是问题又来了，每个人调用接口使用的具体数据都不一样，公共组件方法也只能浅共，还是要自己去写一部分看似差异实则无区别的方法。那么A们就想着拉服务端业务大接口，自己在中间的服务层去分装小接口，按照自己的规则去‘操控’中间的服务层给自己提供想要的数据，就像回音壁一样返回到自己‘内心’的声音。
 
-ps: 目前需要解决的问题是中间层性能问题和典型的契合的场景。规则可以不断优化和迭代。
-
 
 
 ## 安装和使用
 
-#### step1	安装
+#### npm  | yarn
 
 ```shell
-jnpm i -S @jd/soundbar-core
+npm install @soundbar/core --save
+yarn add @soundbar/core
 ```
 
 #### step2	引入解释器功能类
 
 ```js
-const { shakingCore, mergeCore } = require("@jd/soundbar-core")
+const { shakingCore, mergeCore } = require("@soundbar/core")
 ```
 
 #### step3	实例化并入参
@@ -44,7 +44,7 @@ const shakingGroupData = shakingCore.getshakingGroup
 #### 基本示例
 
 ```js
-const { shakingCore, mergeCore } = require("@jd/soundbar-core")
+const { shakingCore, mergeCore } = require("@soundbar/core")
 
 const mergeCore = new mergeCore(mergeRule, sourceDB)
 const mergeGroupData = mergeCore.getmergeGroup
